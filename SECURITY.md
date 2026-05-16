@@ -42,10 +42,21 @@ Conforme cada fase do roadmap é concluída, marcar aqui os itens implementados.
 - [ ] 2FA TOTP — pendente (pré-lançamento)
 
 ### Fase 2 — Modelo de dados
-- [ ] RLS habilitado em **todas** as tabelas
-- [ ] Policies revisadas (default deny)
-- [ ] Service role key isolada
-- [ ] Migrations versionadas
+- [x] RLS habilitado em **todas** as tabelas (profiles, accounts, credit_cards, recurring_entries, installments, planned_entries, transfer_rules)
+- [x] Policies revisadas: cada tabela tem select/insert/update/delete restritas a `auth.uid() = user_id`
+- [x] Constraints de integridade (CHECK constraints em valores, datas, day-of-month)
+- [x] Foreign keys com `on delete cascade` apropriados
+- [x] Trigger de criação automática de profile via `security definer`
+- [x] Service role key isolada (não usada no app, só pra migrations)
+- [x] Migrations versionadas em `supabase/migrations/`
+
+### Fase 3-6 — Aplicação
+- [x] Engine de projeção 100% pura (sem efeitos colaterais, sem acesso a BD)
+- [x] Validação Zod em todas as Server Actions (accounts, recurring_entries, transfer_rules)
+- [x] Mensagens de erro genéricas (não vaza estrutura interna)
+- [x] Server Actions verificam `auth.getUser()` antes de qualquer operação
+- [x] Inserção sempre com `user_id` do usuário autenticado (não confia em input)
+- [x] Componentes simulador rodam apenas em memória do client — nada é salvo
 
 ### Fase 7 — IA
 - [ ] Classificação semântica de escopo

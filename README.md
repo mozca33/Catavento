@@ -2,7 +2,7 @@
 
 > Controle financeiro que olha pra frente — pra autônomos e profissionais liberais que misturam PJ e PF.
 
-**Status:** 🚧 Em desenvolvimento (Fase 2 — Modelo de dados)
+**Status:** 🚧 Em desenvolvimento (concluídas Fases 0-6, próxima: Fase 7 — IA conversacional)
 **Última atualização:** 2026-05-16
 
 ---
@@ -159,12 +159,12 @@ Detalhamento completo em [`CLAUDE.md`](./CLAUDE.md).
 |---|---|---|
 | **0. Setup** | Repo Next.js + Supabase + Vercel + design system | ✅ Concluído |
 | **1. Auth + perfil** | Login (email), signup, perfil, middleware, logout | ✅ Core concluído (2FA e rate limit pendentes) |
-| **2. Modelo de dados** | Contas, cartões, recorrências, parcelamentos | 🚧 Próxima fase |
-| **3. Engine de projeção** | Cálculo de saldo dia a dia, 12 meses | ⏳ Planejado |
-| **4. Dashboard** | Visualização da projeção + alertas | ⏳ Planejado |
-| **5. Simulador "e se?"** | Compras hipotéticas com impacto visual | ⏳ Planejado |
-| **6. Multi-conta PJ+PF** | Tags, transferências, gastos PJ | ⏳ Planejado |
-| **7. IA conversacional** | Chat com Claude + tools + filtro de escopo | ⏳ Planejado |
+| **2. Modelo de dados** | Schema Postgres + RLS em todas as tabelas | ✅ Concluído |
+| **3. Engine de projeção** | Cálculo de saldo dia a dia, 12 meses, cartões com closing/autopay | ✅ Concluído |
+| **4. Dashboard** | Gráfico de projeção, cards de saldo PF/PJ, próximos eventos | ✅ Concluído |
+| **5. Simulador "e se?"** | Compras hipotéticas com comparativo de 3, 6, 12 meses | ✅ Concluído |
+| **6. Multi-conta PJ+PF** | Tags, transferências recorrentes, toggle PF/PJ/All | ✅ Concluído |
+| **7. IA conversacional** | Chat com Claude + tools + filtro de escopo | 🚧 Próxima fase |
 | **8. Cobrança** | Trial 7d + plano único | ⏳ Planejado |
 | **9. Landing + lançamento** | Página de venda, copy, produção | ⏳ Planejado |
 
@@ -213,3 +213,8 @@ Abra [http://localhost:3000](http://localhost:3000).
 - ✅ Fase 0 concluída: scaffold Next.js 16, headers de segurança, clientes Supabase/Anthropic, filtro de escopo da IA
 - 🔗 Integração GitHub e Supabase CLI
 - ✅ Fase 1 core: páginas de login/signup com Server Actions, validação Zod, middleware de auth, callback OAuth com proteção contra open redirect, layout autenticado, página de perfil, logout
+- ✅ Fase 2: schema Postgres (profiles, accounts, credit_cards, recurring_entries, installments, planned_entries, transfer_rules) com RLS em todas as tabelas, triggers de updated_at, trigger de criação automática de profile, enums tipados
+- ✅ Fase 3: engine de projeção pura (`src/lib/projection/`) — calcula saldo dia a dia para 12 meses considerando recorrências, parcelamentos, eventos planejados, transferências e datas de fatura/débito automático de cartões
+- ✅ Fase 4: dashboard com gráfico (recharts), cards de saldo PF/PJ/total, lista de próximos eventos, empty state com CTA
+- ✅ Fase 5: simulador "E se?" — formulário interativo client-side que recomputa projeção em tempo real e mostra comparativo de saldo em 3/6/12 meses + onde cai a 1ª parcela
+- ✅ Fase 6: CRUDs de contas, recorrências e transferências recorrentes; toggle PF/PJ/Consolidado no gráfico; navegação completa

@@ -2,6 +2,14 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
+const NAV_ITEMS: { href: string; label: string }[] = [
+  { href: "/dashboard", label: "Dashboard" },
+  { href: "/contas", label: "Contas" },
+  { href: "/recorrencias", label: "Recorrências" },
+  { href: "/transferencias", label: "Transferências" },
+  { href: "/simulador", label: "Simulador" },
+];
+
 export default async function AuthenticatedLayout({
   children,
 }: {
@@ -20,16 +28,32 @@ export default async function AuthenticatedLayout({
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
       <header className="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
-          <Link
-            href="/dashboard"
-            className="flex items-center gap-2 font-semibold text-slate-900 dark:text-slate-50"
-          >
-            🌬️ Catavento
-          </Link>
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-slate-600 dark:text-slate-400">
+          <div className="flex items-center gap-8">
+            <Link
+              href="/dashboard"
+              className="flex items-center gap-2 font-semibold text-slate-900 dark:text-slate-50"
+            >
+              🌬️ Catavento
+            </Link>
+            <nav className="hidden gap-1 md:flex">
+              {NAV_ITEMS.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="rounded-lg px-3 py-1.5 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-50"
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </nav>
+          </div>
+          <div className="flex items-center gap-2">
+            <Link
+              href="/profile"
+              className="hidden text-sm text-slate-600 hover:underline sm:block dark:text-slate-400"
+            >
               {user.email}
-            </span>
+            </Link>
             <form action="/auth/signout" method="post">
               <button
                 type="submit"
