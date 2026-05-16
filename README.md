@@ -2,7 +2,7 @@
 
 > Controle financeiro que olha pra frente — pra autônomos e profissionais liberais que misturam PJ e PF.
 
-**Status:** 🚧 Em desenvolvimento (Fase 0 — Setup)
+**Status:** 🚧 Em desenvolvimento (Fase 2 — Modelo de dados)
 **Última atualização:** 2026-05-16
 
 ---
@@ -157,9 +157,9 @@ Detalhamento completo em [`CLAUDE.md`](./CLAUDE.md).
 
 | Fase | Entregável | Status |
 |---|---|---|
-| **0. Setup** | Repo Next.js + Supabase + Vercel + design system | 🚧 Em andamento |
-| **1. Auth + perfil** | Login (email/Google), onboarding, perfil | ⏳ Planejado |
-| **2. Modelo de dados** | Contas, cartões, recorrências, parcelamentos | ⏳ Planejado |
+| **0. Setup** | Repo Next.js + Supabase + Vercel + design system | ✅ Concluído |
+| **1. Auth + perfil** | Login (email), signup, perfil, middleware, logout | ✅ Core concluído (2FA e rate limit pendentes) |
+| **2. Modelo de dados** | Contas, cartões, recorrências, parcelamentos | 🚧 Próxima fase |
 | **3. Engine de projeção** | Cálculo de saldo dia a dia, 12 meses | ⏳ Planejado |
 | **4. Dashboard** | Visualização da projeção + alertas | ⏳ Planejado |
 | **5. Simulador "e se?"** | Compras hipotéticas com impacto visual | ⏳ Planejado |
@@ -210,4 +210,6 @@ Abra [http://localhost:3000](http://localhost:3000).
 - 🛠️ Stack técnica escolhida e validada (versões reais e atuais)
 - 🔒 Plano de segurança definido (ver CLAUDE.md)
 - 🤖 Adicionada diretiva: IA com escopo restrito (filtro semântico pré-Zod)
-- 🚧 Scaffold Next.js 16 concluído
+- ✅ Fase 0 concluída: scaffold Next.js 16, headers de segurança, clientes Supabase/Anthropic, filtro de escopo da IA
+- 🔗 Integração GitHub e Supabase CLI
+- ✅ Fase 1 core: páginas de login/signup com Server Actions, validação Zod, middleware de auth, callback OAuth com proteção contra open redirect, layout autenticado, página de perfil, logout

@@ -31,12 +31,15 @@ Conforme cada fase do roadmap é concluída, marcar aqui os itens implementados.
 - [ ] CSP completa — adicionar conforme features (Supabase, Anthropic, etc.)
 
 ### Fase 1 — Auth
-- [ ] Supabase Auth via `@supabase/ssr`
-- [ ] Middleware protege rotas autenticadas
-- [ ] Cookies httpOnly/secure/sameSite
-- [ ] Rate limiting em rotas de auth
-- [ ] Política de senha forte
-- [ ] 2FA TOTP
+- [x] Supabase Auth via `@supabase/ssr`
+- [x] Middleware protege rotas autenticadas
+- [x] Cookies httpOnly/secure/sameSite (gerenciado pelo `@supabase/ssr`)
+- [x] Política de senha forte (Zod: min 8, maiúscula, minúscula, número)
+- [x] Validação 100% server-side (Zod em Server Actions)
+- [x] Mensagens genéricas de erro (não vaza se e-mail existe)
+- [x] Callback OAuth com proteção contra open redirect
+- [ ] Rate limiting em rotas de auth — pendente (Upstash)
+- [ ] 2FA TOTP — pendente (pré-lançamento)
 
 ### Fase 2 — Modelo de dados
 - [ ] RLS habilitado em **todas** as tabelas
