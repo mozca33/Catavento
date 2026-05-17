@@ -74,20 +74,20 @@ export function ProjectionChart({ series }: Props) {
           <AreaChart data={data}>
             <defs>
               <linearGradient id="balanceGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#0f172a" stopOpacity={0.3} />
-                <stop offset="100%" stopColor="#0f172a" stopOpacity={0} />
+                <stop offset="0%" stopColor="#2563EB" stopOpacity={0.35} />
+                <stop offset="100%" stopColor="#2563EB" stopOpacity={0} />
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+            <CartesianGrid strokeDasharray="3 3" stroke="#94a3b8" strokeOpacity={0.2} />
             <XAxis
               dataKey="date"
               tickFormatter={formatDateTick}
-              stroke="#64748b"
+              stroke="#94a3b8"
               fontSize={12}
             />
             <YAxis
               tickFormatter={formatCurrencyShort}
-              stroke="#64748b"
+              stroke="#94a3b8"
               fontSize={12}
               width={70}
             />
@@ -95,18 +95,22 @@ export function ProjectionChart({ series }: Props) {
               formatter={(v) => formatBRL(typeof v === "number" ? v : 0)}
               labelFormatter={(d) => formatDateFull(d as string)}
               contentStyle={{
-                background: "white",
-                border: "1px solid #e2e8f0",
+                background: "rgba(15, 23, 42, 0.95)",
+                color: "#F1F5F9",
+                border: "1px solid rgba(148, 163, 184, 0.3)",
                 borderRadius: "8px",
                 fontSize: "12px",
               }}
+              labelStyle={{ color: "#94a3b8" }}
             />
             <Area
               type="monotone"
               dataKey="value"
-              stroke="#0f172a"
-              strokeWidth={2}
+              stroke="#2563EB"
+              strokeWidth={2.5}
               fill="url(#balanceGradient)"
+              dot={{ r: 3, fill: "#2563EB" }}
+              activeDot={{ r: 5 }}
             />
           </AreaChart>
         </ResponsiveContainer>

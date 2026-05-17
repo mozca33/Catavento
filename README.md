@@ -23,12 +23,12 @@ Catavento é um SaaS de controle financeiro pessoal e empresarial que **começa 
 
 **Diferencial vs. concorrentes:**
 
-| | Mobills/Organizze | Catavento |
-|---|---|---|
-| Foco | Passado (categorização) | **Futuro (projeção)** |
-| Decisão de compra | Manual | **Simulador instantâneo** |
-| PJ + PF | Não integrado | **Nativo, multi-conta** |
-| IA | Não tem | **Chat conversacional** |
+|                   | Mobills/Organizze       | Catavento                 |
+| ----------------- | ----------------------- | ------------------------- |
+| Foco              | Passado (categorização) | **Futuro (projeção)**     |
+| Decisão de compra | Manual                  | **Simulador instantâneo** |
+| PJ + PF           | Não integrado           | **Nativo, multi-conta**   |
+| IA                | Não tem                 | **Chat conversacional**   |
 
 ---
 
@@ -37,7 +37,9 @@ Catavento é um SaaS de controle financeiro pessoal e empresarial que **começa 
 ### Core (MVP)
 
 #### 1. 📊 Projeção de caixa futuro
+
 Calcula automaticamente o saldo de cada conta dia a dia pelos próximos 12 meses, considerando:
+
 - Entradas recorrentes (salário, aluguéis recebidos, dividendos, retiradas PJ)
 - Saídas recorrentes (contas fixas, faturas, condomínio)
 - Parcelamentos em curso (cartão, financiamentos)
@@ -46,7 +48,9 @@ Calcula automaticamente o saldo de cada conta dia a dia pelos próximos 12 meses
 **Status:** ⏳ Planejado
 
 #### 2. 🔮 Simulador "E se eu comprar X?"
+
 Botão pra adicionar uma compra hipotética (à vista ou parcelada) e ver instantaneamente:
+
 - Impacto no saldo nos próximos 12 meses
 - Em qual fatura cai a primeira parcela
 - Se viola alguma meta de saldo mínimo
@@ -55,7 +59,9 @@ Botão pra adicionar uma compra hipotética (à vista ou parcelada) e ver instan
 **Status:** ⏳ Planejado
 
 #### 3. 🏢 Multi-conta PJ + PF
+
 Suporte nativo pra quem mistura caixa pessoal e empresarial:
+
 - Cadastrar múltiplas contas (PF + PJ)
 - Marcar transações como PJ ou PF
 - Regras de transferência recorrente (ex: "retirada de R$ 3.000 da PJ pra PF todo mês")
@@ -65,7 +71,9 @@ Suporte nativo pra quem mistura caixa pessoal e empresarial:
 **Status:** ⏳ Planejado
 
 #### 4. 🤖 IA conversacional com escopo restrito
+
 Chat integrado com IA (Claude) que entende seu contexto financeiro real e responde perguntas em linguagem natural:
+
 - "Posso comprar uma geladeira de R$ 4.400 em 10x agora?"
 - "Quando devo agendar essa compra pra não estourar o orçamento?"
 - "Quanto vou ter em julho?"
@@ -78,7 +86,9 @@ A IA acessa seus dados reais via tools e simula cenários ao vivo.
 **Status:** ⏳ Planejado
 
 #### 5. 🚨 Alertas preditivos
+
 Não espera dar problema — avisa antes:
+
 - "Em 23 dias seu saldo Nubank fica abaixo de R$ 1.000"
 - "Sua fatura de agosto vai estourar a folga média"
 - "Você prometeu manter R$ 20k em julho — está R$ 2k abaixo da meta"
@@ -86,6 +96,7 @@ Não espera dar problema — avisa antes:
 **Status:** ⏳ Planejado
 
 #### 6. 💳 Cadastro de cartões e parcelamentos
+
 - Múltiplos cartões com data de fechamento e vencimento
 - Parcelamentos em curso (quantas parcelas faltam, valor)
 - Faturas projetadas automaticamente
@@ -98,56 +109,63 @@ Não espera dar problema — avisa antes:
 ### Features futuras (pós-MVP)
 
 #### 📈 Investimentos integrados
+
 Tratar rendimentos de FIIs, dividendos e renda fixa como entradas recorrentes projetadas no fluxo de caixa.
 
 #### 🎯 Metas e eventos grandes
+
 Planejamento de casamento, mudança, intercâmbio, compra de imóvel — com plano mês a mês de quanto guardar e quando pagar cada parcela.
 
 #### 🔗 Open Finance
+
 Conexão automática com bancos via Belvo/Pluggy pra puxar saldos e transações.
 
 #### 📱 App mobile
+
 Versão nativa iOS/Android.
 
 #### 📑 Importação OFX/CSV
+
 Importar extratos de bancos que não estão no Open Finance.
 
 #### 🧾 Categorização automática com IA
+
 Classificar transações importadas automaticamente.
 
 #### 👥 Multi-usuário (casal/família)
+
 Compartilhar contas e visão consolidada entre cônjuges/sócios.
 
 ---
 
 ## 🛠️ Stack técnica
 
-| Camada | Tecnologia | Versão |
-|---|---|---|
-| Frontend | Next.js (App Router) + TypeScript | 16.2.6 |
-| Estilo | Tailwind CSS + shadcn/ui | 4.x / 4.7 |
-| Backend | Next.js API Routes / Server Actions | — |
-| Banco de dados | Supabase (Postgres + RLS) | 2.105 |
-| Auth | Supabase Auth (`@supabase/ssr`) | 0.10 |
-| IA | Claude API (`@anthropic-ai/sdk`) | 0.96 |
-| Validação | Zod | 4.4 |
-| Hospedagem | Vercel | — |
-| Cobrança | A decidir (Stripe ou Mercado Pago) | — |
-| Mercado | Brasil (i18n preparado pra futuro) | — |
+| Camada         | Tecnologia                          | Versão    |
+| -------------- | ----------------------------------- | --------- |
+| Frontend       | Next.js (App Router) + TypeScript   | 16.2.6    |
+| Estilo         | Tailwind CSS + shadcn/ui            | 4.x / 4.7 |
+| Backend        | Next.js API Routes / Server Actions | —         |
+| Banco de dados | Supabase (Postgres + RLS)           | 2.105     |
+| Auth           | Supabase Auth (`@supabase/ssr`)     | 0.10      |
+| IA             | Claude API (`@anthropic-ai/sdk`)    | 0.96      |
+| Validação      | Zod                                 | 4.4       |
+| Hospedagem     | Vercel                              | —         |
+| Cobrança       | Mercado Pago                        | —         |
+| Mercado        | Brasil (i18n preparado pra futuro)  | —         |
 
 ---
 
 ## 🎨 Identidade visual — Paleta "Brisa"
 
-| Token | Hex | Uso |
-|---|---|---|
-| `--brand-primary` | #2563EB | Azul confiável, CTAs primários |
-| `--brand-accent` | #F97066 | Coral, destaques |
+| Token             | Hex     | Uso                             |
+| ----------------- | ------- | ------------------------------- |
+| `--brand-primary` | #2563EB | Azul confiável, CTAs primários  |
+| `--brand-accent`  | #F97066 | Coral, destaques                |
 | `--brand-success` | #10B981 | Verde-esmeralda, saldo positivo |
-| `--brand-warning` | #F59E0B | Âmbar, alertas suaves |
-| `--brand-danger` | #DC2626 | Vermelho, alertas críticos |
-| `--bg-page` | #FEFCF6 | Creme suave, fundo geral |
-| `--text-primary` | #0F172A | Azul-marinho profundo, texto |
+| `--brand-warning` | #F59E0B | Âmbar, alertas suaves           |
+| `--brand-danger`  | #DC2626 | Vermelho, alertas críticos      |
+| `--bg-page`       | #FEFCF6 | Creme suave, fundo geral        |
+| `--text-primary`  | #0F172A | Azul-marinho profundo, texto    |
 
 **Logo:** wordmark "Catavento" + símbolo de catavento com 4 pás (azul, coral, verde, âmbar) representando as 4 cores da paleta. Componente em `src/components/logo.tsx`.
 
@@ -171,18 +189,18 @@ Detalhamento completo em [`CLAUDE.md`](./CLAUDE.md).
 
 ## 🗺️ Roadmap
 
-| Fase | Entregável | Status |
-|---|---|---|
-| **0. Setup** | Repo Next.js + Supabase + Vercel + design system | ✅ Concluído |
-| **1. Auth + perfil** | Login (email), signup, perfil, middleware, logout | ✅ Core concluído (2FA e rate limit pendentes) |
-| **2. Modelo de dados** | Schema Postgres + RLS em todas as tabelas | ✅ Concluído |
-| **3. Engine de projeção** | Cálculo de saldo dia a dia, 12 meses, cartões com closing/autopay | ✅ Concluído |
-| **4. Dashboard** | Gráfico de projeção, cards de saldo PF/PJ, próximos eventos | ✅ Concluído |
-| **5. Simulador "e se?"** | Compras hipotéticas com comparativo de 3, 6, 12 meses | ✅ Concluído |
-| **6. Multi-conta PJ+PF** | Tags, transferências recorrentes, toggle PF/PJ/All | ✅ Concluído |
-| **7. IA conversacional** | Chat com Claude + tools + filtro de escopo de 3 camadas | ✅ Concluído |
-| **8. Cobrança** | Trial 7d + plano único (Mercado Pago) | ✅ Concluído |
-| **9. Landing + lançamento** | Landing page, termos, privacidade, guia de deploy | ✅ Concluído |
+| Fase                        | Entregável                                                        | Status                                         |
+| --------------------------- | ----------------------------------------------------------------- | ---------------------------------------------- |
+| **0. Setup**                | Repo Next.js + Supabase + Vercel + design system                  | ✅ Concluído                                   |
+| **1. Auth + perfil**        | Login (email), signup, perfil, middleware, logout                 | ✅ Core concluído (2FA e rate limit pendentes) |
+| **2. Modelo de dados**      | Schema Postgres + RLS em todas as tabelas                         | ✅ Concluído                                   |
+| **3. Engine de projeção**   | Cálculo de saldo dia a dia, 12 meses, cartões com closing/autopay | ✅ Concluído                                   |
+| **4. Dashboard**            | Gráfico de projeção, cards de saldo PF/PJ, próximos eventos       | ✅ Concluído                                   |
+| **5. Simulador "e se?"**    | Compras hipotéticas com comparativo de 3, 6, 12 meses             | ✅ Concluído                                   |
+| **6. Multi-conta PJ+PF**    | Tags, transferências recorrentes, toggle PF/PJ/All                | ✅ Concluído                                   |
+| **7. IA conversacional**    | Chat com Claude + tools + filtro de escopo de 3 camadas           | ✅ Concluído                                   |
+| **8. Cobrança**             | Trial 7d + plano único (Mercado Pago)                             | ✅ Concluído                                   |
+| **9. Landing + lançamento** | Landing page, termos, privacidade, guia de deploy                 | ✅ Concluído                                   |
 
 ---
 
@@ -221,6 +239,7 @@ Abra [http://localhost:3000](http://localhost:3000).
 ## 📝 Changelog
 
 ### 2026-05-16
+
 - 📄 Projeto criado
 - 🎯 Posicionamento, features core e roadmap definidos
 - 🛠️ Stack técnica escolhida e validada (versões reais e atuais)
@@ -236,6 +255,7 @@ Abra [http://localhost:3000](http://localhost:3000).
 - ✅ Fase 6: CRUDs de contas, recorrências e transferências recorrentes; toggle PF/PJ/Consolidado no gráfico; navegação completa
 
 ### 2026-05-17
+
 - 🎨 Identidade visual aplicada: paleta "Brisa" (azul + coral + creme), variáveis CSS em `globals.css`
 - 🌬️ Logo Catavento criado (wordmark + símbolo SVG de 4 pás)
 - 🔐 Google OAuth integrado em /login e /signup (botão "Continuar com Google")
