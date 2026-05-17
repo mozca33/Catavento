@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import type { Account, CreditCard, RecurringEntry } from "@/types/database";
+import type { Account, CreditCard, IntervalUnit, RecurringEntry } from "@/types/database";
 import {
   createRecurringAction,
   updateRecurringAction,
@@ -15,6 +15,13 @@ interface Props {
   accounts: Account[];
   cards: CreditCard[];
 }
+
+const UNIT_LABELS: Record<IntervalUnit, string> = {
+  days: "dia(s)",
+  weeks: "semana(s)",
+  months: "mês(es)",
+  years: "ano(s)",
+};
 
 export function RecurringForm({
   mode,
@@ -39,11 +46,24 @@ export function RecurringForm({
   );
   const initialTarget = initialValues?.credit_card_id ? "card" : "account";
   const [targetType, setTargetType] = useState<"account" | "card">(initialTarget);
-  const [frequency, setFrequency] = useState<"monthly" | "yearly">(
-    initialValues?.frequency ?? "monthly",
+  const [targetId, setTargetId] = useState<string>(() => {
+    if (initialValues?.account_id) return initialValues.account_id;
+    if (initialValues?.credit_card_id) return initialValues.credit_card_id;
+    return accounts[0]?.id ?? "";
+  });
+  const [intervalUnit, setIntervalUnit] = useState<IntervalUnit>(
+    initialValues?.interval_unit ?? "months",
   );
 
+  function switchTargetType(t: "account" | "card") {
+    setTargetType(t);
+    const opts = t === "account" ? accounts : cards;
+    setTargetId(opts[0]?.id ?? "");
+  }
+
   const err = state && !state.ok ? state.fieldErrors : undefined;
+  const showDayOfMonth = intervalUnit === "months" || intervalUnit === "years";
+  const showMonthOfYear = intervalUnit === "years";
 
   return (
     <form
@@ -65,7 +85,7 @@ export function RecurringForm({
               }}
               className={`flex-1 rounded-md px-3 py-1.5 font-medium ${
                 direction === d
-                  ? "bg-white text-[color:var(--text-primary)] shadow-sm"
+                  ? "bg-[color:var(--bg-elevated)] text-[color:var(--text-primary)] shadow-sm"
                   : "text-[color:var(--text-secondary)]"
               }`}
             >
@@ -94,38 +114,61 @@ export function RecurringForm({
         error={err?.amount?.[0]}
       />
 
-      <div className="grid grid-cols-2 gap-3">
-        <Select
-          label="Frequência"
-          name="frequency"
-          value={frequency}
-          onChange={(v) => setFrequency(v as "monthly" | "yearly")}
-          options={[
-            ["monthly", "Mensal"],
-            ["yearly", "Anual"],
-          ]}
-        />
-        <Input
-          label="Dia do mês"
-          name="day_of_month"
-          type="number"
-          min="1"
-          max="31"
-          defaultValue={initialValues?.day_of_month?.toString() ?? "1"}
-          error={err?.day_of_month?.[0]}
-        />
+      <div>
+        <label className="block text-sm font-medium text-[color:var(--text-secondary)]">
+          Repetir a cada
+        </label>
+        <div className="mt-1 grid grid-cols-2 gap-2">
+          <input
+            name="interval_count"
+            type="number"
+            min="1"
+            max="365"
+            defaultValue={initialValues?.interval_count?.toString() ?? "1"}
+            required
+            className="block w-full rounded-lg border border-[color:var(--border-default)] bg-[color:var(--bg-card)] px-3 py-2 text-sm text-[color:var(--text-primary)] focus:border-[color:var(--brand-primary)] focus:outline-none focus:ring-1 focus:ring-[color:var(--brand-primary)]"
+          />
+          <select
+            name="interval_unit"
+            value={intervalUnit}
+            onChange={(e) => setIntervalUnit(e.target.value as IntervalUnit)}
+            className="block w-full rounded-lg border border-[color:var(--border-default)] bg-[color:var(--bg-card)] px-3 py-2 text-sm text-[color:var(--text-primary)] focus:border-[color:var(--brand-primary)] focus:outline-none focus:ring-1 focus:ring-[color:var(--brand-primary)]"
+          >
+            {(["days", "weeks", "months", "years"] as IntervalUnit[]).map((u) => (
+              <option key={u} value={u}>
+                {UNIT_LABELS[u]}
+              </option>
+            ))}
+          </select>
+        </div>
+        <p className="mt-1 text-xs text-[color:var(--text-muted)]">
+          Ex: a cada 2 semanas, a cada 3 meses, a cada 6 meses
+        </p>
       </div>
 
-      {frequency === "yearly" && (
-        <Input
-          label="Mês (1-12)"
-          name="month_of_year"
-          type="number"
-          min="1"
-          max="12"
-          defaultValue={initialValues?.month_of_year?.toString()}
-          error={err?.month_of_year?.[0]}
-        />
+      {showDayOfMonth && (
+        <div className="grid grid-cols-2 gap-3">
+          <Input
+            label="Dia do mês"
+            name="day_of_month"
+            type="number"
+            min="1"
+            max="31"
+            defaultValue={initialValues?.day_of_month?.toString() ?? "1"}
+            error={err?.day_of_month?.[0]}
+          />
+          {showMonthOfYear && (
+            <Input
+              label="Mês (1-12)"
+              name="month_of_year"
+              type="number"
+              min="1"
+              max="12"
+              defaultValue={initialValues?.month_of_year?.toString() ?? "1"}
+              error={err?.month_of_year?.[0]}
+            />
+          )}
+        </div>
       )}
 
       <div>
@@ -135,10 +178,10 @@ export function RecurringForm({
         <div className="mt-1 flex gap-1 rounded-lg bg-[color:var(--bg-muted)] p-1 text-xs">
           <button
             type="button"
-            onClick={() => setTargetType("account")}
+            onClick={() => switchTargetType("account")}
             className={`flex-1 rounded-md px-3 py-1.5 font-medium ${
               targetType === "account"
-                ? "bg-white text-[color:var(--text-primary)] shadow-sm"
+                ? "bg-[color:var(--bg-elevated)] text-[color:var(--text-primary)] shadow-sm"
                 : "text-[color:var(--text-secondary)]"
             }`}
           >
@@ -147,10 +190,10 @@ export function RecurringForm({
           {cards.length > 0 && direction === "out" && (
             <button
               type="button"
-              onClick={() => setTargetType("card")}
+              onClick={() => switchTargetType("card")}
               className={`flex-1 rounded-md px-3 py-1.5 font-medium ${
                 targetType === "card"
-                  ? "bg-white text-[color:var(--text-primary)] shadow-sm"
+                  ? "bg-[color:var(--bg-elevated)] text-[color:var(--text-primary)] shadow-sm"
                   : "text-[color:var(--text-secondary)]"
               }`}
             >
@@ -161,12 +204,11 @@ export function RecurringForm({
         <input type="hidden" name="target_type" value={targetType} />
       </div>
 
-      <Select
+      <ControlledSelect
         label={targetType === "account" ? "Conta" : "Cartão"}
         name="target_id"
-        defaultValue={
-          initialValues?.account_id ?? initialValues?.credit_card_id ?? undefined
-        }
+        value={targetId}
+        onChange={setTargetId}
         options={
           targetType === "account"
             ? accounts.map((a) => [a.id, `${a.name} (${a.kind})`] as [string, string])
@@ -174,7 +216,7 @@ export function RecurringForm({
         }
       />
 
-      <Select
+      <UncontrolledSelect
         label="Natureza"
         name="kind"
         defaultValue={initialValues?.kind ?? "PF"}
@@ -257,7 +299,7 @@ function Input({
         placeholder={placeholder}
         defaultValue={defaultValue}
         required={required}
-        className="mt-1 block w-full rounded-lg border border-[color:var(--border-default)] bg-white px-3 py-2 text-sm text-[color:var(--text-primary)] focus:border-[color:var(--brand-primary)] focus:outline-none focus:ring-1 focus:ring-[color:var(--brand-primary)] dark:bg-slate-950"
+        className="mt-1 block w-full rounded-lg border border-[color:var(--border-default)] bg-[color:var(--bg-card)] px-3 py-2 text-sm text-[color:var(--text-primary)] focus:border-[color:var(--brand-primary)] focus:outline-none focus:ring-1 focus:ring-[color:var(--brand-primary)]"
       />
       {error && (
         <p className="mt-1 text-xs text-red-600 dark:text-red-400">{error}</p>
@@ -266,20 +308,18 @@ function Input({
   );
 }
 
-function Select({
+function ControlledSelect({
   label,
   name,
   options,
   value,
-  defaultValue,
   onChange,
 }: {
   label: string;
   name: string;
   options: [string, string][];
-  value?: string;
-  defaultValue?: string;
-  onChange?: (v: string) => void;
+  value: string;
+  onChange: (v: string) => void;
 }) {
   return (
     <div>
@@ -289,9 +329,39 @@ function Select({
       <select
         name={name}
         value={value}
-        onChange={onChange ? (e) => onChange(e.target.value) : undefined}
-        defaultValue={value === undefined ? defaultValue ?? options[0]?.[0] : undefined}
-        className="mt-1 block w-full rounded-lg border border-[color:var(--border-default)] bg-white px-3 py-2 text-sm text-[color:var(--text-primary)] focus:border-[color:var(--brand-primary)] focus:outline-none focus:ring-1 focus:ring-[color:var(--brand-primary)] dark:bg-slate-950"
+        onChange={(e) => onChange(e.target.value)}
+        className="mt-1 block w-full rounded-lg border border-[color:var(--border-default)] bg-[color:var(--bg-card)] px-3 py-2 text-sm text-[color:var(--text-primary)] focus:border-[color:var(--brand-primary)] focus:outline-none focus:ring-1 focus:ring-[color:var(--brand-primary)]"
+      >
+        {options.map(([v, l]) => (
+          <option key={v} value={v}>
+            {l}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+}
+
+function UncontrolledSelect({
+  label,
+  name,
+  options,
+  defaultValue,
+}: {
+  label: string;
+  name: string;
+  options: [string, string][];
+  defaultValue?: string;
+}) {
+  return (
+    <div>
+      <label className="block text-sm font-medium text-[color:var(--text-secondary)]">
+        {label}
+      </label>
+      <select
+        name={name}
+        defaultValue={defaultValue || options[0]?.[0]}
+        className="mt-1 block w-full rounded-lg border border-[color:var(--border-default)] bg-[color:var(--bg-card)] px-3 py-2 text-sm text-[color:var(--text-primary)] focus:border-[color:var(--brand-primary)] focus:outline-none focus:ring-1 focus:ring-[color:var(--brand-primary)]"
       >
         {options.map(([v, l]) => (
           <option key={v} value={v}>

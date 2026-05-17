@@ -16,6 +16,7 @@
   --bg-page: #FEFCF6;             /* creme suave */
   --bg-card: #FFFFFF;
   --bg-muted: #F5F2EA;
+  --bg-elevated: #FFFFFF;         /* fundo de toggles/active states */
   --text-primary: #0F172A;        /* azul-marinho profundo */
   --text-secondary: #475569;
   --text-muted: #94A3B8;
@@ -51,11 +52,12 @@
 @media (prefers-color-scheme: dark) {
   :root {
     --bg-page: #0B1220;
-    --bg-card: #111827;
-    --bg-muted: #1E293B;
+    --bg-card: #131A2A;
+    --bg-muted: #1E2638;
+    --bg-elevated: #334155;       /* slate-700 — toggle ativo no dark */
     --text-primary: #F1F5F9;
     --text-secondary: #CBD5E1;
-    --text-muted: #64748B;
+    --text-muted: #94A3B8;
     --border-default: #1E293B;
     --border-strong: #334155;
     --brand-primary: #3B82F6;

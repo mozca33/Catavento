@@ -34,12 +34,21 @@ export function InstallmentForm({
   >(action, null);
 
   const initialTarget = initialValues?.credit_card_id ? "card" : "account";
-  const initialTargetId =
-    initialValues?.credit_card_id ?? initialValues?.account_id ?? "";
 
   const [targetType, setTargetType] = useState<"account" | "card">(
     initialTarget,
   );
+  const [targetId, setTargetId] = useState<string>(() => {
+    if (initialValues?.account_id) return initialValues.account_id;
+    if (initialValues?.credit_card_id) return initialValues.credit_card_id;
+    return accounts[0]?.id ?? "";
+  });
+
+  function switchTargetType(t: "account" | "card") {
+    setTargetType(t);
+    const opts = t === "account" ? accounts : cards;
+    setTargetId(opts[0]?.id ?? "");
+  }
 
   const today = new Date().toISOString().slice(0, 10);
   const err = state && !state.ok ? state.fieldErrors : undefined;
@@ -64,10 +73,10 @@ export function InstallmentForm({
         <div className="mt-1 flex gap-1 rounded-lg bg-[color:var(--bg-muted)] p-1 text-xs">
           <button
             type="button"
-            onClick={() => setTargetType("account")}
+            onClick={() => switchTargetType("account")}
             className={`flex-1 rounded-md px-3 py-1.5 font-medium ${
               targetType === "account"
-                ? "bg-white text-[color:var(--text-primary)] shadow-sm"
+                ? "bg-[color:var(--bg-elevated)] text-[color:var(--text-primary)] shadow-sm"
                 : "text-[color:var(--text-secondary)]"
             }`}
           >
@@ -76,10 +85,10 @@ export function InstallmentForm({
           {cards.length > 0 && (
             <button
               type="button"
-              onClick={() => setTargetType("card")}
+              onClick={() => switchTargetType("card")}
               className={`flex-1 rounded-md px-3 py-1.5 font-medium ${
                 targetType === "card"
-                  ? "bg-white text-[color:var(--text-primary)] shadow-sm"
+                  ? "bg-[color:var(--bg-elevated)] text-[color:var(--text-primary)] shadow-sm"
                   : "text-[color:var(--text-secondary)]"
               }`}
             >
@@ -93,7 +102,8 @@ export function InstallmentForm({
       <Select
         label={targetType === "account" ? "Conta" : "Cartão"}
         name="target_id"
-        defaultValue={initialTargetId}
+        value={targetId}
+        onChange={setTargetId}
         options={
           targetType === "account"
             ? accounts.map((a) => [a.id, `${a.name} (${a.kind})`] as [string, string])
@@ -218,31 +228,51 @@ function Select({
   label,
   name,
   options,
+  value,
   defaultValue,
+  onChange,
   error,
 }: {
   label: string;
   name: string;
   options: [string, string][];
+  value?: string;
   defaultValue?: string;
+  onChange?: (v: string) => void;
   error?: string;
 }) {
+  const isControlled = value !== undefined;
   return (
     <div>
       <label className="block text-sm font-medium text-[color:var(--text-secondary)]">
         {label}
       </label>
-      <select
-        name={name}
-        defaultValue={defaultValue || options[0]?.[0]}
-        className="mt-1 block w-full rounded-lg border border-[color:var(--border-default)] bg-white px-3 py-2 text-sm text-[color:var(--text-primary)] focus:border-[color:var(--brand-primary)] focus:outline-none focus:ring-1 focus:ring-[color:var(--brand-primary)] dark:bg-slate-950"
-      >
-        {options.map(([v, l]) => (
-          <option key={v} value={v}>
-            {l}
-          </option>
-        ))}
-      </select>
+      {isControlled ? (
+        <select
+          name={name}
+          value={value}
+          onChange={(e) => onChange?.(e.target.value)}
+          className="mt-1 block w-full rounded-lg border border-[color:var(--border-default)] bg-white px-3 py-2 text-sm text-[color:var(--text-primary)] focus:border-[color:var(--brand-primary)] focus:outline-none focus:ring-1 focus:ring-[color:var(--brand-primary)] dark:bg-slate-950"
+        >
+          {options.map(([v, l]) => (
+            <option key={v} value={v}>
+              {l}
+            </option>
+          ))}
+        </select>
+      ) : (
+        <select
+          name={name}
+          defaultValue={defaultValue || options[0]?.[0]}
+          className="mt-1 block w-full rounded-lg border border-[color:var(--border-default)] bg-white px-3 py-2 text-sm text-[color:var(--text-primary)] focus:border-[color:var(--brand-primary)] focus:outline-none focus:ring-1 focus:ring-[color:var(--brand-primary)] dark:bg-slate-950"
+        >
+          {options.map(([v, l]) => (
+            <option key={v} value={v}>
+              {l}
+            </option>
+          ))}
+        </select>
+      )}
       {error && (
         <p className="mt-1 text-xs text-red-600 dark:text-red-400">{error}</p>
       )}

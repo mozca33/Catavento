@@ -30,6 +30,31 @@ export function addDays(s: DateString, n: number): DateString {
   return formatDate(d);
 }
 
+export function addWeeks(s: DateString, n: number): DateString {
+  return addDays(s, n * 7);
+}
+
+export function addYears(s: DateString, n: number): DateString {
+  return addMonths(s, n * 12);
+}
+
+export function addInterval(
+  s: DateString,
+  count: number,
+  unit: "days" | "weeks" | "months" | "years",
+): DateString {
+  switch (unit) {
+    case "days":
+      return addDays(s, count);
+    case "weeks":
+      return addWeeks(s, count);
+    case "months":
+      return addMonths(s, count);
+    case "years":
+      return addYears(s, count);
+  }
+}
+
 export function addMonths(s: DateString, n: number): DateString {
   const d = parseDate(s);
   const targetMonth = d.getUTCMonth() + n;

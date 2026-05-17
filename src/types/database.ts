@@ -16,6 +16,7 @@ export type AccountType =
   | "other";
 
 export type RecurrenceFrequency = "monthly" | "yearly";
+export type IntervalUnit = "days" | "weeks" | "months" | "years";
 
 export type EntryDirection = "in" | "out";
 
@@ -70,7 +71,9 @@ export interface RecurringEntry {
   amount: number;
   direction: EntryDirection;
   frequency: RecurrenceFrequency;
-  day_of_month: number;
+  interval_count: number;
+  interval_unit: IntervalUnit;
+  day_of_month: number | null;
   month_of_year: number | null;
   start_date: string;
   end_date: string | null;
@@ -141,10 +144,13 @@ export interface TransferRule {
   id: string;
   user_id: string;
   from_account_id: string;
-  to_account_id: string;
+  to_account_id: string | null;
+  to_external_label: string | null;
   description: string;
   amount: number;
-  day_of_month: number;
+  interval_count: number;
+  interval_unit: IntervalUnit;
+  day_of_month: number | null;
   start_date: string;
   end_date: string | null;
   archived: boolean;

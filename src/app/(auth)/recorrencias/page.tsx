@@ -60,12 +60,14 @@ export default async function RecorrenciasPage() {
                   </td>
                   <td className="px-4 py-3 text-[color:var(--text-secondary)]">
                     {r.direction === "in" ? "Entrada" : "Saída"} ·{" "}
-                    {r.frequency === "monthly" ? "Mensal" : "Anual"}
+                    {formatInterval(r.interval_count, r.interval_unit)}
                   </td>
                   <td className="px-4 py-3 text-[color:var(--text-secondary)]">
-                    {r.frequency === "monthly"
-                      ? `Dia ${r.day_of_month}`
-                      : `${r.day_of_month}/${r.month_of_year}`}
+                    {r.day_of_month
+                      ? r.month_of_year
+                        ? `${r.day_of_month}/${r.month_of_year}`
+                        : `Dia ${r.day_of_month}`
+                      : "—"}
                   </td>
                   <td className="px-4 py-3">
                     <span
@@ -107,6 +109,18 @@ export default async function RecorrenciasPage() {
       )}
     </div>
   );
+}
+
+function formatInterval(count: number, unit: string): string {
+  const labels: Record<string, [string, string]> = {
+    days: ["dia", "dias"],
+    weeks: ["semana", "semanas"],
+    months: ["mês", "meses"],
+    years: ["ano", "anos"],
+  };
+  const [singular, plural] = labels[unit] ?? [unit, unit];
+  if (count === 1) return `Todo ${singular}`;
+  return `A cada ${count} ${plural}`;
 }
 
 function formatBRL(v: number): string {

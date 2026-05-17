@@ -7,7 +7,9 @@ export default async function TransferenciasPage() {
   const supabase = await createClient();
   const { data } = await supabase
     .from("transfer_rules")
-    .select("*, from:from_account_id(name, kind), to:to_account_id(name, kind)")
+    .select(
+      "*, from:from_account_id(name, kind), to:to_account_id(name, kind)",
+    )
     .eq("archived", false)
     .order("created_at", { ascending: false });
 
@@ -15,7 +17,10 @@ export default async function TransferenciasPage() {
     id: string;
     description: string;
     amount: number;
-    day_of_month: number;
+    interval_count: number;
+    interval_unit: string;
+    day_of_month: number | null;
+    to_external_label: string | null;
     from: { name: string; kind: string } | null;
     to: { name: string; kind: string } | null;
   };
@@ -63,12 +68,21 @@ export default async function TransferenciasPage() {
                 <tr key={r.id}>
                   <td className="px-4 py-3 font-medium text-[color:var(--text-primary)]">
                     {r.description}
+                    {r.to_external_label && (
+                      <span className="ml-2 rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-800 dark:bg-amber-950 dark:text-amber-200">
+                        Externa
+                      </span>
+                    )}
                   </td>
                   <td className="px-4 py-3 text-[color:var(--text-secondary)]">
-                    {r.from?.name} ({r.from?.kind}) → {r.to?.name} ({r.to?.kind})
+                    {r.from?.name} ({r.from?.kind}) →{" "}
+                    {r.to
+                      ? `${r.to.name} (${r.to.kind})`
+                      : r.to_external_label}
                   </td>
                   <td className="px-4 py-3 text-[color:var(--text-secondary)]">
-                    Dia {r.day_of_month}
+                    {formatInterval(r.interval_count, r.interval_unit)}
+                    {r.day_of_month ? `, dia ${r.day_of_month}` : ""}
                   </td>
                   <td className="px-4 py-3 text-right font-semibold text-[color:var(--text-primary)]">
                     {formatBRL(r.amount)}
@@ -92,6 +106,18 @@ export default async function TransferenciasPage() {
       )}
     </div>
   );
+}
+
+function formatInterval(count: number, unit: string): string {
+  const labels: Record<string, [string, string]> = {
+    days: ["dia", "dias"],
+    weeks: ["semana", "semanas"],
+    months: ["mês", "meses"],
+    years: ["ano", "anos"],
+  };
+  const [singular, plural] = labels[unit] ?? [unit, unit];
+  if (count === 1) return `Todo ${singular}`;
+  return `A cada ${count} ${plural}`;
 }
 
 function formatBRL(v: number): string {

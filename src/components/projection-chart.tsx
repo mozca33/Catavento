@@ -59,7 +59,7 @@ export function ProjectionChart({ series }: Props) {
               onClick={() => setView(v)}
               className={`rounded-md px-3 py-1 font-medium transition ${
                 view === v
-                  ? "bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-slate-50"
+                  ? "bg-[color:var(--bg-elevated)] text-[color:var(--text-primary)] shadow-sm"
                   : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
               }`}
             >

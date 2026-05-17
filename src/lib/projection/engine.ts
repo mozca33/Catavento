@@ -9,6 +9,7 @@ import type {
   TransferRule,
 } from "@/types/database";
 import {
+  addInterval,
   addMonths,
   compareDates,
   dateOnMonth,
@@ -206,32 +207,40 @@ export function projectCashFlow(
   // --- Regras de transferência ---
   for (const t of snapshot.transferRules) {
     if (t.archived) continue;
-    const dates = expandMonthlyDates(
+    const dates = expandIntervalDates(
       t.start_date,
       t.end_date,
+      t.interval_count,
+      t.interval_unit,
       t.day_of_month,
+      null,
       from,
       horizon,
     );
+    const isExternal = t.to_account_id === null;
     for (const date of dates) {
-      // saída da from
+      // saída da origem (sempre)
       events.push({
         date,
         accountId: t.from_account_id,
-        description: `Transferência: ${t.description}`,
+        description: isExternal
+          ? `Transferência → ${t.to_external_label}: ${t.description}`
+          : `Transferência: ${t.description}`,
         amount: -t.amount,
         source: "transfer_out",
         kind: getAccountKind(snapshot.accounts, t.from_account_id),
       });
-      // entrada na to
-      events.push({
-        date,
-        accountId: t.to_account_id,
-        description: `Transferência: ${t.description}`,
-        amount: t.amount,
-        source: "transfer_in",
-        kind: getAccountKind(snapshot.accounts, t.to_account_id),
-      });
+      // entrada na conta destino (só se interno)
+      if (!isExternal && t.to_account_id) {
+        events.push({
+          date,
+          accountId: t.to_account_id,
+          description: `Transferência: ${t.description}`,
+          amount: t.amount,
+          source: "transfer_in",
+          kind: getAccountKind(snapshot.accounts, t.to_account_id),
+        });
+      }
     }
   }
   void cardToAccount; // referência reservada pra otimizações futuras
@@ -289,14 +298,11 @@ function expandRecurrence(
   from: DateString,
   horizon: DateString,
 ): DateString[] {
-  if (r.frequency === "monthly") {
-    return expandMonthlyDates(r.start_date, r.end_date, r.day_of_month, from, horizon);
-  }
-  // yearly
-  if (r.month_of_year == null) return [];
-  return expandYearlyDates(
+  return expandIntervalDates(
     r.start_date,
     r.end_date,
+    r.interval_count,
+    r.interval_unit,
     r.day_of_month,
     r.month_of_year,
     from,
@@ -304,57 +310,44 @@ function expandRecurrence(
   );
 }
 
-function expandMonthlyDates(
+/**
+ * Expande uma recorrência com intervalo customizado.
+ * - days/weeks: aplica direto a partir de start_date
+ * - months/years: aplica intervalo + ajusta pro day_of_month (se fornecido)
+ */
+function expandIntervalDates(
   startDate: DateString,
   endDate: DateString | null | undefined,
-  dayOfMonth: number,
+  intervalCount: number,
+  intervalUnit: "days" | "weeks" | "months" | "years",
+  dayOfMonth: number | null,
+  monthOfYear: number | null,
   from: DateString,
   horizon: DateString,
 ): DateString[] {
   const result: DateString[] = [];
-  // Começar do mês de max(startDate, from)
-  const cursorStart = startDate > from ? startDate : from;
-  let year = getYear(cursorStart);
-  let month = getMonthIndex(cursorStart);
+  let cursor = startDate;
 
-  while (true) {
-    const candidate = dateOnMonth(year, month, dayOfMonth);
-    if (candidate > horizon) break;
-    if (isWithin(candidate, startDate, endDate) && candidate >= from) {
-      result.push(candidate);
+  // Para months/years com day_of_month, ajusta o cursor inicial
+  if ((intervalUnit === "months" || intervalUnit === "years") && dayOfMonth) {
+    cursor = dateOnMonth(getYear(cursor), getMonthIndex(cursor), dayOfMonth);
+    if (intervalUnit === "years" && monthOfYear) {
+      cursor = dateOnMonth(getYear(cursor), monthOfYear - 1, dayOfMonth);
     }
-    month++;
-    if (month > 11) {
-      month = 0;
-      year++;
+    if (cursor < startDate) {
+      cursor = addInterval(cursor, intervalCount, intervalUnit);
     }
-    // Safety: nunca passar do horizon + buffer
-    if (year > getYear(horizon) + 1) break;
   }
-  return result;
-}
 
-function expandYearlyDates(
-  startDate: DateString,
-  endDate: DateString | null | undefined,
-  dayOfMonth: number,
-  monthOfYear: number,
-  from: DateString,
-  horizon: DateString,
-): DateString[] {
-  const result: DateString[] = [];
-  const monthIdx = monthOfYear - 1;
-  let year = Math.max(getYear(startDate), getYear(from));
-
-  while (true) {
-    const candidate = dateOnMonth(year, monthIdx, dayOfMonth);
-    if (candidate > horizon) break;
-    if (isWithin(candidate, startDate, endDate) && candidate >= from) {
-      result.push(candidate);
+  let safetyCounter = 0;
+  while (cursor <= horizon && safetyCounter < 1000) {
+    if (isWithin(cursor, startDate, endDate) && cursor >= from) {
+      result.push(cursor);
     }
-    year++;
-    if (year > getYear(horizon) + 1) break;
+    cursor = addInterval(cursor, intervalCount, intervalUnit);
+    safetyCounter++;
   }
+
   return result;
 }
 

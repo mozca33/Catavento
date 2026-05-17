@@ -1,7 +1,7 @@
 "use client";
 
-import { useActionState } from "react";
-import type { Account, TransferRule } from "@/types/database";
+import { useActionState, useState } from "react";
+import type { Account, IntervalUnit, TransferRule } from "@/types/database";
 import {
   createTransferRuleAction,
   updateTransferRuleAction,
@@ -14,6 +14,13 @@ interface Props {
   initialValues?: Partial<TransferRule>;
   accounts: Account[];
 }
+
+const UNIT_LABELS: Record<IntervalUnit, string> = {
+  days: "dia(s)",
+  weeks: "semana(s)",
+  months: "mês(es)",
+  years: "ano(s)",
+};
 
 export function TransferForm({
   mode,
@@ -32,27 +39,78 @@ export function TransferForm({
     null,
   );
 
+  const [destinationType, setDestinationType] = useState<"internal" | "external">(
+    initialValues?.to_external_label ? "external" : "internal",
+  );
+  const [fromId, setFromId] = useState<string>(
+    initialValues?.from_account_id ?? accounts[0]?.id ?? "",
+  );
+  const [toId, setToId] = useState<string>(
+    initialValues?.to_account_id ?? accounts[1]?.id ?? accounts[0]?.id ?? "",
+  );
+  const [intervalUnit, setIntervalUnit] = useState<IntervalUnit>(
+    initialValues?.interval_unit ?? "months",
+  );
+
   const err = state && !state.ok ? state.fieldErrors : undefined;
+  const showDayOfMonth = intervalUnit === "months" || intervalUnit === "years";
 
   return (
     <form
       action={formAction}
       className="space-y-4 rounded-2xl border border-[color:var(--border-default)] bg-[color:var(--bg-card)] p-6"
     >
-      <Select
+      <ControlledSelect
         label="De (conta origem)"
         name="from_account_id"
-        defaultValue={initialValues?.from_account_id ?? accounts[0]?.id}
+        value={fromId}
+        onChange={setFromId}
         options={accounts.map((a) => [a.id, `${a.name} (${a.kind})`] as [string, string])}
         error={err?.from_account_id?.[0]}
       />
-      <Select
-        label="Para (conta destino)"
-        name="to_account_id"
-        defaultValue={initialValues?.to_account_id ?? accounts[1]?.id}
-        options={accounts.map((a) => [a.id, `${a.name} (${a.kind})`] as [string, string])}
-        error={err?.to_account_id?.[0]}
-      />
+
+      <div>
+        <label className="block text-sm font-medium text-[color:var(--text-secondary)]">
+          Tipo de destino
+        </label>
+        <div className="mt-1 flex gap-1 rounded-lg bg-[color:var(--bg-muted)] p-1 text-xs">
+          {(["internal", "external"] as const).map((t) => (
+            <button
+              key={t}
+              type="button"
+              onClick={() => setDestinationType(t)}
+              className={`flex-1 rounded-md px-3 py-1.5 font-medium ${
+                destinationType === t
+                  ? "bg-[color:var(--bg-elevated)] text-[color:var(--text-primary)] shadow-sm"
+                  : "text-[color:var(--text-secondary)]"
+              }`}
+            >
+              {t === "internal" ? "Outra conta minha" : "Externo (terceiro)"}
+            </button>
+          ))}
+        </div>
+        <input type="hidden" name="destination_type" value={destinationType} />
+      </div>
+
+      {destinationType === "internal" ? (
+        <ControlledSelect
+          label="Para (conta destino)"
+          name="to_account_id"
+          value={toId}
+          onChange={setToId}
+          options={accounts.map((a) => [a.id, `${a.name} (${a.kind})`] as [string, string])}
+          error={err?.to_account_id?.[0]}
+        />
+      ) : (
+        <Input
+          label="Para quem? (descrição livre)"
+          name="to_external_label"
+          placeholder="Ex: Pagamento aluguel, PIX João, Mensalidade gym"
+          defaultValue={initialValues?.to_external_label ?? undefined}
+          error={err?.to_external_label?.[0]}
+        />
+      )}
+
       <Input
         label="Descrição"
         name="description"
@@ -60,15 +118,46 @@ export function TransferForm({
         defaultValue={initialValues?.description}
         error={err?.description?.[0]}
       />
-      <div className="grid grid-cols-2 gap-3">
-        <Input
-          label="Valor (R$)"
-          name="amount"
-          type="number"
-          step="0.01"
-          defaultValue={initialValues?.amount?.toString()}
-          error={err?.amount?.[0]}
-        />
+
+      <Input
+        label="Valor (R$)"
+        name="amount"
+        type="number"
+        step="0.01"
+        defaultValue={initialValues?.amount?.toString()}
+        error={err?.amount?.[0]}
+      />
+
+      <div>
+        <label className="block text-sm font-medium text-[color:var(--text-secondary)]">
+          Repetir a cada
+        </label>
+        <div className="mt-1 grid grid-cols-2 gap-2">
+          <input
+            name="interval_count"
+            type="number"
+            min="1"
+            max="365"
+            defaultValue={initialValues?.interval_count?.toString() ?? "1"}
+            required
+            className="block w-full rounded-lg border border-[color:var(--border-default)] bg-[color:var(--bg-card)] px-3 py-2 text-sm text-[color:var(--text-primary)] focus:border-[color:var(--brand-primary)] focus:outline-none focus:ring-1 focus:ring-[color:var(--brand-primary)]"
+          />
+          <select
+            name="interval_unit"
+            value={intervalUnit}
+            onChange={(e) => setIntervalUnit(e.target.value as IntervalUnit)}
+            className="block w-full rounded-lg border border-[color:var(--border-default)] bg-[color:var(--bg-card)] px-3 py-2 text-sm text-[color:var(--text-primary)] focus:border-[color:var(--brand-primary)] focus:outline-none focus:ring-1 focus:ring-[color:var(--brand-primary)]"
+          >
+            {(["days", "weeks", "months", "years"] as IntervalUnit[]).map((u) => (
+              <option key={u} value={u}>
+                {UNIT_LABELS[u]}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      {showDayOfMonth && (
         <Input
           label="Dia do mês"
           name="day_of_month"
@@ -78,7 +167,8 @@ export function TransferForm({
           defaultValue={initialValues?.day_of_month?.toString() ?? "1"}
           error={err?.day_of_month?.[0]}
         />
-      </div>
+      )}
+
       <div className="grid grid-cols-2 gap-3">
         <Input
           label="Início"
@@ -152,7 +242,7 @@ function Input({
         placeholder={placeholder}
         defaultValue={defaultValue}
         required={required}
-        className="mt-1 block w-full rounded-lg border border-[color:var(--border-default)] bg-white px-3 py-2 text-sm text-[color:var(--text-primary)] focus:border-[color:var(--brand-primary)] focus:outline-none focus:ring-1 focus:ring-[color:var(--brand-primary)] dark:bg-slate-950"
+        className="mt-1 block w-full rounded-lg border border-[color:var(--border-default)] bg-[color:var(--bg-card)] px-3 py-2 text-sm text-[color:var(--text-primary)] focus:border-[color:var(--brand-primary)] focus:outline-none focus:ring-1 focus:ring-[color:var(--brand-primary)]"
       />
       {error && (
         <p className="mt-1 text-xs text-red-600 dark:text-red-400">{error}</p>
@@ -161,17 +251,19 @@ function Input({
   );
 }
 
-function Select({
+function ControlledSelect({
   label,
   name,
   options,
-  defaultValue,
+  value,
+  onChange,
   error,
 }: {
   label: string;
   name: string;
   options: [string, string][];
-  defaultValue?: string;
+  value: string;
+  onChange: (v: string) => void;
   error?: string;
 }) {
   return (
@@ -181,8 +273,9 @@ function Select({
       </label>
       <select
         name={name}
-        defaultValue={defaultValue || options[0]?.[0]}
-        className="mt-1 block w-full rounded-lg border border-[color:var(--border-default)] bg-white px-3 py-2 text-sm text-[color:var(--text-primary)] focus:border-[color:var(--brand-primary)] focus:outline-none focus:ring-1 focus:ring-[color:var(--brand-primary)] dark:bg-slate-950"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="mt-1 block w-full rounded-lg border border-[color:var(--border-default)] bg-[color:var(--bg-card)] px-3 py-2 text-sm text-[color:var(--text-primary)] focus:border-[color:var(--brand-primary)] focus:outline-none focus:ring-1 focus:ring-[color:var(--brand-primary)]"
       >
         {options.map(([v, l]) => (
           <option key={v} value={v}>

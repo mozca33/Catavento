@@ -12,9 +12,18 @@ const NAV_ITEMS: { href: string; label: string }[] = [
   { href: "/planejados", label: "Planejados" },
   { href: "/transferencias", label: "Transferências" },
   { href: "/simulador", label: "Simulador" },
-  { href: "/assistente", label: "Assistente IA" },
-  { href: "/assinatura", label: "Assinatura" },
+  { href: "/assistente", label: "Assistente" },
 ];
+
+function firstName(full?: string | null, fallbackEmail?: string | null): string {
+  if (full && full.trim()) {
+    return full.trim().split(/\s+/)[0];
+  }
+  if (fallbackEmail) {
+    return fallbackEmail.split("@")[0];
+  }
+  return "você";
+}
 
 export default async function AuthenticatedLayout({
   children,
@@ -30,37 +39,42 @@ export default async function AuthenticatedLayout({
     redirect("/login");
   }
 
+  const fullName = (user.user_metadata?.full_name as string | undefined) ?? null;
+  const displayName = firstName(fullName, user.email);
+
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
-      <header className="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
-          <div className="flex items-center gap-8">
-            <Link href="/dashboard" aria-label="Catavento">
-              <Logo size={26} />
-            </Link>
-            <nav className="hidden gap-1 md:flex">
+    <div className="min-h-screen bg-[color:var(--bg-page)]">
+      <header className="border-b border-[color:var(--border-default)] bg-[color:var(--bg-card)]">
+        <div className="mx-auto flex max-w-6xl items-center gap-4 px-4 py-3">
+          <Link href="/dashboard" aria-label="Catavento" className="shrink-0">
+            <Logo size={24} />
+          </Link>
+
+          <nav className="min-w-0 flex-1 overflow-x-auto">
+            <div className="flex gap-1 whitespace-nowrap">
               {NAV_ITEMS.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="rounded-lg px-3 py-1.5 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-50"
+                  className="rounded-lg px-3 py-1.5 text-sm font-medium text-[color:var(--text-secondary)] transition hover:bg-[color:var(--bg-muted)] hover:text-[color:var(--text-primary)]"
                 >
                   {item.label}
                 </Link>
               ))}
-            </nav>
-          </div>
-          <div className="flex items-center gap-2">
+            </div>
+          </nav>
+
+          <div className="flex shrink-0 items-center gap-2">
             <Link
-              href="/profile"
-              className="hidden text-sm text-slate-600 hover:underline sm:block dark:text-slate-400"
+              href="/configuracoes"
+              className="rounded-lg px-3 py-1.5 text-sm font-medium text-[color:var(--text-primary)] hover:bg-[color:var(--bg-muted)]"
             >
-              {user.email}
+              {displayName}
             </Link>
             <form action="/auth/signout" method="post">
               <button
                 type="submit"
-                className="rounded-lg px-3 py-1 text-sm text-slate-700 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+                className="rounded-lg px-3 py-1.5 text-sm text-[color:var(--text-secondary)] hover:bg-[color:var(--bg-muted)]"
               >
                 Sair
               </button>

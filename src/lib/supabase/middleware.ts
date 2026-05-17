@@ -63,12 +63,14 @@ export async function updateSession(request: NextRequest) {
   }
 
   // Com usuário: checa assinatura para rotas protegidas
+  // Otimização: só rota *de página* (não API, não asset) precisa do gate
   if (user && !isAuthRoute && !isPublicRoute) {
     const isAlwaysAllowed = ALWAYS_ALLOWED_PATHS.some((p) =>
       pathname.startsWith(p),
     );
+    const isApiRoute = pathname.startsWith("/api/");
 
-    if (!isAlwaysAllowed) {
+    if (!isAlwaysAllowed && !isApiRoute) {
       const { data: sub } = await supabase
         .from("subscriptions")
         .select("status, trial_ends_at")

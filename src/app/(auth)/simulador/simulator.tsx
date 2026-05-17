@@ -96,7 +96,7 @@ export function Simulator({ snapshot }: Props) {
                 onClick={() => setH({ ...h, target: "card" })}
                 className={`flex-1 rounded-md px-3 py-1.5 font-medium transition ${
                   h.target === "card"
-                    ? "bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-slate-50"
+                    ? "bg-[color:var(--bg-elevated)] text-[color:var(--text-primary)] shadow-sm"
                     : "text-slate-600 dark:text-slate-400"
                 }`}
               >
@@ -107,7 +107,7 @@ export function Simulator({ snapshot }: Props) {
               onClick={() => setH({ ...h, target: "account" })}
               className={`flex-1 rounded-md px-3 py-1.5 font-medium transition ${
                 h.target === "account"
-                  ? "bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-slate-50"
+                  ? "bg-[color:var(--bg-elevated)] text-[color:var(--text-primary)] shadow-sm"
                   : "text-slate-600 dark:text-slate-400"
               }`}
             >

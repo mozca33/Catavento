@@ -29,8 +29,9 @@ function parseRecurring(formData: FormData) {
     description: formData.get("description"),
     amount: formData.get("amount"),
     direction: formData.get("direction"),
-    frequency: formData.get("frequency"),
-    day_of_month: formData.get("day_of_month"),
+    interval_count: formData.get("interval_count"),
+    interval_unit: formData.get("interval_unit"),
+    day_of_month: formData.get("day_of_month") || undefined,
     month_of_year: formData.get("month_of_year") || undefined,
     target_type: formData.get("target_type"),
     target_id: formData.get("target_id"),
@@ -38,6 +39,10 @@ function parseRecurring(formData: FormData) {
     start_date: formData.get("start_date"),
     end_date: formData.get("end_date"),
   });
+}
+
+function legacyFrequency(unit: string): "monthly" | "yearly" {
+  return unit === "years" ? "yearly" : "monthly";
 }
 
 export async function createRecurringAction(
@@ -64,8 +69,10 @@ export async function createRecurringAction(
     description: d.description,
     amount: d.amount,
     direction: d.direction,
-    frequency: d.frequency,
-    day_of_month: d.day_of_month,
+    frequency: legacyFrequency(d.interval_unit),
+    interval_count: d.interval_count,
+    interval_unit: d.interval_unit,
+    day_of_month: d.day_of_month ?? null,
     month_of_year: d.month_of_year ?? null,
     start_date: d.start_date,
     end_date: d.end_date || null,
@@ -105,8 +112,10 @@ export async function updateRecurringAction(
       description: d.description,
       amount: d.amount,
       direction: d.direction,
-      frequency: d.frequency,
-      day_of_month: d.day_of_month,
+      frequency: legacyFrequency(d.interval_unit),
+      interval_count: d.interval_count,
+      interval_unit: d.interval_unit,
+      day_of_month: d.day_of_month ?? null,
       month_of_year: d.month_of_year ?? null,
       start_date: d.start_date,
       end_date: d.end_date || null,
@@ -143,10 +152,14 @@ export async function deleteRecurringAction(formData: FormData): Promise<void> {
 function parseTransfer(formData: FormData) {
   return transferRuleSchema.safeParse({
     from_account_id: formData.get("from_account_id"),
+    destination_type: formData.get("destination_type"),
     to_account_id: formData.get("to_account_id"),
+    to_external_label: formData.get("to_external_label"),
     description: formData.get("description"),
     amount: formData.get("amount"),
-    day_of_month: formData.get("day_of_month"),
+    interval_count: formData.get("interval_count"),
+    interval_unit: formData.get("interval_unit"),
+    day_of_month: formData.get("day_of_month") || undefined,
     start_date: formData.get("start_date"),
     end_date: formData.get("end_date"),
   });
@@ -171,10 +184,15 @@ export async function createTransferRuleAction(
   const { error } = await supabase.from("transfer_rules").insert({
     user_id: user.id,
     from_account_id: d.from_account_id,
-    to_account_id: d.to_account_id,
+    to_account_id:
+      d.destination_type === "internal" ? d.to_account_id || null : null,
+    to_external_label:
+      d.destination_type === "external" ? d.to_external_label || null : null,
     description: d.description,
     amount: d.amount,
-    day_of_month: d.day_of_month,
+    interval_count: d.interval_count,
+    interval_unit: d.interval_unit,
+    day_of_month: d.day_of_month ?? null,
     start_date: d.start_date,
     end_date: d.end_date || null,
   });
@@ -207,10 +225,15 @@ export async function updateTransferRuleAction(
     .from("transfer_rules")
     .update({
       from_account_id: d.from_account_id,
-      to_account_id: d.to_account_id,
+      to_account_id:
+        d.destination_type === "internal" ? d.to_account_id || null : null,
+      to_external_label:
+        d.destination_type === "external" ? d.to_external_label || null : null,
       description: d.description,
       amount: d.amount,
-      day_of_month: d.day_of_month,
+      interval_count: d.interval_count,
+      interval_unit: d.interval_unit,
+      day_of_month: d.day_of_month ?? null,
       start_date: d.start_date,
       end_date: d.end_date || null,
     })
