@@ -8,7 +8,6 @@ import Anthropic from "@anthropic-ai/sdk";
  */
 
 if (!process.env.ANTHROPIC_API_KEY) {
-  // Warning em desenvolvimento; falha em produção quando usado.
   console.warn("[catavento] ANTHROPIC_API_KEY não configurada");
 }
 
@@ -17,8 +16,8 @@ export const anthropic = new Anthropic({
 });
 
 export const AI_MODELS = {
-  /** Modelo leve para classificação de escopo e tarefas rápidas */
-  fast: "claude-haiku-4-5-20251001",
-  /** Modelo principal para chat e análises */
-  main: "claude-sonnet-4-6",
+  /** Modelo principal — chat conversacional do produto */
+  main: "claude-opus-4-7",
+  /** Modelo leve para classificação de escopo e tarefas curtas */
+  fast: "claude-haiku-4-5",
 } as const;

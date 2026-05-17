@@ -2,8 +2,8 @@
 
 > Controle financeiro que olha pra frente — pra autônomos e profissionais liberais que misturam PJ e PF.
 
-**Status:** 🚧 Em desenvolvimento (concluídas Fases 0-6, próxima: Fase 7 — IA conversacional)
-**Última atualização:** 2026-05-16
+**Status:** 🚧 Em desenvolvimento (concluídas Fases 0-7, próxima: Fase 8 — Cobrança Mercado Pago)
+**Última atualização:** 2026-05-17
 
 ---
 
@@ -180,8 +180,8 @@ Detalhamento completo em [`CLAUDE.md`](./CLAUDE.md).
 | **4. Dashboard** | Gráfico de projeção, cards de saldo PF/PJ, próximos eventos | ✅ Concluído |
 | **5. Simulador "e se?"** | Compras hipotéticas com comparativo de 3, 6, 12 meses | ✅ Concluído |
 | **6. Multi-conta PJ+PF** | Tags, transferências recorrentes, toggle PF/PJ/All | ✅ Concluído |
-| **7. IA conversacional** | Chat com Claude + tools + filtro de escopo | 🚧 Próxima fase |
-| **8. Cobrança** | Trial 7d + plano único | ⏳ Planejado |
+| **7. IA conversacional** | Chat com Claude + tools + filtro de escopo de 3 camadas | ✅ Concluído |
+| **8. Cobrança** | Trial 7d + plano único (Mercado Pago) | 🚧 Próxima fase |
 | **9. Landing + lançamento** | Página de venda, copy, produção | ⏳ Planejado |
 
 ---
@@ -240,3 +240,5 @@ Abra [http://localhost:3000](http://localhost:3000).
 - 🌬️ Logo Catavento criado (wordmark + símbolo SVG de 4 pás)
 - 🔐 Google OAuth integrado em /login e /signup (botão "Continuar com Google")
 - 📋 Decisões registradas em DECISIONS.md: Google sim, onboarding opcional, paleta Brisa, notificações configuráveis pelo usuário
+- 🤖 Fase 7 — IA conversacional: assistente em `/assistente` com Claude Opus 4.7 (chat) + Haiku 4.5 (classificação de escopo). Filtro de escopo em 3 camadas (sanitização → heurística anti-injection → classificação semântica). 5 tools read-only: `get_current_date`, `get_accounts_summary`, `get_upcoming_events`, `get_balance_at_date`, `simulate_purchase`. API route `/api/chat` com loop de tool use (até 5 iterações), validação Zod, e proteção contra prompt injection.
+- 💸 Cobrança: confirmada Mercado Pago para Fase 8 (PIX recorrente nativo, taxa menor)

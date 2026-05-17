@@ -59,11 +59,18 @@ Conforme cada fase do roadmap é concluída, marcar aqui os itens implementados.
 - [x] Componentes simulador rodam apenas em memória do client — nada é salvo
 
 ### Fase 7 — IA
-- [ ] Classificação semântica de escopo
-- [ ] Logs de uso (sem dados sensíveis)
-- [ ] Rate limiting específico para rotas de IA
-- [ ] System prompts versionados
-- [ ] Tools com validação Zod nos parâmetros
+- [x] Classificação semântica de escopo (via Claude Haiku 4.5)
+- [x] Detecção heurística de prompt injection (regex patterns)
+- [x] Sanitização Unicode (NFKC) e limite de tamanho (2000 chars)
+- [x] Tools com validação Zod nos parâmetros
+- [x] Tools read-only — nenhuma mutação no banco
+- [x] System prompts versionados em `src/lib/ai/system-prompt.ts`
+- [x] API key Anthropic apenas server-side (`server-only` import)
+- [x] Histórico de chat limitado a 40 mensagens (anti-abuso)
+- [x] Iterações de tool use limitadas a 5 (anti-loop)
+- [x] Mensagens genéricas em refusal/blocked (não vaza system prompt)
+- [ ] Rate limiting específico para rotas de IA — pendente (Upstash)
+- [ ] Logs de uso pra auditoria — pendente (após decisão de observability)
 
 ## 🔁 Revisão periódica
 

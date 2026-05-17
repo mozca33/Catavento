@@ -63,36 +63,26 @@ Após signup, usuário vai direto pro dashboard. Se não tem contas, vê empty s
 ### Q-006 — Notificações → **Configuráveis pelo usuário**
 Construir UI de preferências onde o usuário escolhe: e-mail / push (futuro) / só in-app. Tabela `notification_preferences` será adicionada quando implementarmos alertas preditivos (Fase 7+).
 
-## ❓ Dúvidas restantes — re-explicadas e pendentes
+## ✅ Decisões confirmadas (2026-05-17)
 
-### Q-002 — Cobrança: Stripe ou Mercado Pago?
-Quando lançarmos com plano pago, precisamos de um processador de pagamentos. **O que isso significa na prática:**
-- **Stripe**: cobrança internacional, suporta cartão + PIX, taxa ~4-5% por transação. Vantagem: dashboard ótimo, fácil de programar, aceita cartões internacionais.
-- **Mercado Pago**: brasileiro, taxa ~3% (pode ser menor), PIX recorrente nativo. Vantagem: melhor pra quem usa só BRL e clientes Brasil.
-- **Pode decidir na Fase 8**, mas vale pensar agora.
+### Q-002 — Cobrança → **Mercado Pago**
+Brasil-only no MVP, PIX recorrente nativo, taxa menor (~3%). Implementação na Fase 8.
 
-### Q-005 — Limites do plano
-Pra evitar abuso (ex: alguém criar 10.000 contas e quebrar performance), pode haver limites técnicos. **Sugestão**:
-- Trial 7 dias: tudo liberado
-- Plano pago: sem limite na prática (limites técnicos só anti-abuso, ex: 100 contas, 500 recorrências)
-- **Decisão pendente**: definir esses limites antes do lançamento.
+### Q-005 — Limites técnicos → **Generosos (anti-abuso)**
+- Máximo 100 contas por usuário
+- Máximo 50 cartões por usuário
+- Máximo 500 recorrências por usuário
+- Máximo 1000 parcelamentos ativos
+- Máximo 1000 eventos planejados
+Implementar via CHECK constraint ou validação na criação. Decidido antes do lançamento.
 
-### Q-007 — Exportação de dados (LGPD)
-Lei brasileira obriga deixar usuário baixar todos os dados dele. **Formato**:
-- JSON cru (técnico): obrigatório
-- CSV / PDF formatado: opcional, mas torna o produto melhor
-- **Decisão pendente**: implementar antes do lançamento. Por ora, JSON basta.
+### Q-007 — Exportação LGPD → **JSON apenas no MVP**
+Endpoint `/api/me/export` que devolve todos os dados do usuário em JSON. CSV/PDF se houver pedido.
 
-### Q-008 — Múltiplos "livros" por usuário?
-Hoje, 1 usuário = 1 conjunto de contas. Cenário futuro: você quer gerenciar sua vida financeira + a da sua mãe + a da empresa do seu amigo na mesma conta? Isso são "perfis financeiros" separados sob o mesmo login.
-- **Tendência**: deixar pós-MVP. 1 usuário = 1 livro no início.
+### Q-008 — Multi-perfis por usuário → **Pós-MVP** (não decidido ainda, manter como possibilidade)
 
-### Q-009 — Compartilhamento (ex: casal)
-Você e sua esposa Julia logarem com contas diferentes mas verem/editarem o mesmo conjunto de dados financeiros do casamento/casa.
-- **Tendência**: deixar pós-MVP. Mas vale considerar pra v2 dado que vocês são casal.
+### Q-009 — Compartilhamento (casal) → **SIM, pós-MVP**
+Permitir 2+ usuários compartilharem o mesmo conjunto de dados (importante pra casais que gerenciam finanças juntos). Implementação após validação inicial.
 
-### Q-010 — Open Finance (sincronização automática com banco)
-Belvo e Pluggy são serviços que conectam ao seu banco e puxam saldo + transações automaticamente, via Open Finance (regulado pelo BC).
-- Vantagem: usuário não precisa atualizar saldo manualmente
-- Custo: ~R$ 3-8 por usuário/mês (impacta margem)
-- **Tendência**: implementar pós-Fase 9, quando tivermos base paga. Diferencial forte mas custoso.
+### Q-010 — Open Finance → **SIM, pós-MVP**
+Integração com Belvo/Pluggy pra sync automático com bancos. Implementação após base paga estável (custo ~R$ 3-8/usuário/mês).
