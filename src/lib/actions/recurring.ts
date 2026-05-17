@@ -25,19 +25,23 @@ async function authedClient() {
 // ============================================================================
 
 function parseRecurring(formData: FormData) {
+  const get = (k: string) => {
+    const v = formData.get(k);
+    return v === null || v === "" ? undefined : v;
+  };
   return recurringEntrySchema.safeParse({
-    description: formData.get("description"),
-    amount: formData.get("amount"),
-    direction: formData.get("direction"),
-    interval_count: formData.get("interval_count"),
-    interval_unit: formData.get("interval_unit"),
-    day_of_month: formData.get("day_of_month") || undefined,
-    month_of_year: formData.get("month_of_year") || undefined,
-    target_type: formData.get("target_type"),
-    target_id: formData.get("target_id"),
-    kind: formData.get("kind"),
-    start_date: formData.get("start_date"),
-    end_date: formData.get("end_date"),
+    description: get("description"),
+    amount: get("amount"),
+    direction: get("direction"),
+    interval_count: get("interval_count"),
+    interval_unit: get("interval_unit"),
+    day_of_month: get("day_of_month"),
+    month_of_year: get("month_of_year"),
+    target_type: get("target_type"),
+    target_id: get("target_id"),
+    kind: get("kind"),
+    start_date: get("start_date"),
+    end_date: get("end_date"),
   });
 }
 
@@ -156,18 +160,22 @@ export async function deleteRecurringAction(formData: FormData): Promise<void> {
 // ============================================================================
 
 function parseTransfer(formData: FormData) {
+  const get = (k: string) => {
+    const v = formData.get(k);
+    return v === null || v === "" ? undefined : v;
+  };
   return transferRuleSchema.safeParse({
-    from_account_id: formData.get("from_account_id"),
-    destination_type: formData.get("destination_type"),
-    to_account_id: formData.get("to_account_id"),
-    to_external_label: formData.get("to_external_label"),
-    description: formData.get("description"),
-    amount: formData.get("amount"),
-    interval_count: formData.get("interval_count"),
-    interval_unit: formData.get("interval_unit"),
-    day_of_month: formData.get("day_of_month") || undefined,
-    start_date: formData.get("start_date"),
-    end_date: formData.get("end_date"),
+    from_account_id: get("from_account_id"),
+    destination_type: get("destination_type"),
+    to_account_id: get("to_account_id"),
+    to_external_label: get("to_external_label"),
+    description: get("description"),
+    amount: get("amount"),
+    interval_count: get("interval_count"),
+    interval_unit: get("interval_unit"),
+    day_of_month: get("day_of_month"),
+    start_date: get("start_date"),
+    end_date: get("end_date"),
   });
 }
 
