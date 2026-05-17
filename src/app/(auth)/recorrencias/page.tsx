@@ -2,41 +2,65 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import type { RecurringEntry } from "@/types/database";
 import { DeleteButton } from "@/components/delete-button";
-import { deleteRecurringAction } from "@/lib/actions/recurring";
+import { deleteMovementAction } from "@/lib/actions/recurring";
 
-export default async function RecorrenciasPage() {
+type Row = RecurringEntry & {
+  account: { name: string; kind: string } | null;
+  to: { name: string; kind: string } | null;
+  card: { name: string; kind: string } | null;
+};
+
+function movementLabel(r: Row): string {
+  if (r.to_account_id) return "Transferência";
+  if (r.credit_card_id) return r.direction === "in" ? "Entrada" : "Saída (cartão)";
+  return r.direction === "in" ? "Entrada" : "Saída";
+}
+
+function targetText(r: Row): string {
+  if (r.to_account_id) {
+    return `${r.account?.name} → ${r.to?.name}`;
+  }
+  if (r.credit_card_id) {
+    return `${r.card?.name} (cartão)`;
+  }
+  return r.account?.name ?? "—";
+}
+
+export default async function MovimentosPage() {
   const supabase = await createClient();
   const { data } = await supabase
     .from("recurring_entries")
-    .select("*")
+    .select(
+      "*, account:account_id(name, kind), to:to_account_id(name, kind), card:credit_card_id(name, kind)",
+    )
     .eq("archived", false)
     .order("created_at", { ascending: false });
 
-  const entries = (data as RecurringEntry[] | null) ?? [];
+  const rows = (data as Row[] | null) ?? [];
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-[color:var(--text-primary)]">
-            Recorrências
+            Movimentos recorrentes
           </h1>
           <p className="mt-1 text-sm text-[color:var(--text-secondary)]">
-            Entradas e saídas que se repetem todo mês ou ano
+            Entradas, saídas e transferências que se repetem
           </p>
         </div>
         <Link
           href="/recorrencias/nova"
           className="rounded-lg bg-[color:var(--brand-primary)] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[color:var(--brand-primary-hover)]"
         >
-          + Nova recorrência
+          + Novo movimento
         </Link>
       </div>
 
-      {entries.length === 0 ? (
+      {rows.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-[color:var(--border-default)] bg-[color:var(--bg-card)] p-12 text-center">
           <p className="text-[color:var(--text-secondary)]">
-            Nenhuma recorrência cadastrada.
+            Nenhum movimento recorrente cadastrado.
           </p>
         </div>
       ) : (
@@ -46,32 +70,19 @@ export default async function RecorrenciasPage() {
               <tr>
                 <th className="px-4 py-3 text-left">Descrição</th>
                 <th className="px-4 py-3 text-left">Tipo</th>
-                <th className="px-4 py-3 text-left">Dia</th>
-                <th className="px-4 py-3 text-left">Natureza</th>
+                <th className="px-4 py-3 text-left">Conta(s)</th>
+                <th className="px-4 py-3 text-left">Frequência</th>
                 <th className="px-4 py-3 text-right">Valor</th>
                 <th className="px-4 py-3 text-right">Ações</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[color:var(--border-default)]">
-              {entries.map((r) => (
+              {rows.map((r) => (
                 <tr key={r.id}>
                   <td className="px-4 py-3 font-medium text-[color:var(--text-primary)]">
                     {r.description}
-                  </td>
-                  <td className="px-4 py-3 text-[color:var(--text-secondary)]">
-                    {r.direction === "in" ? "Entrada" : "Saída"} ·{" "}
-                    {formatInterval(r.interval_count, r.interval_unit)}
-                  </td>
-                  <td className="px-4 py-3 text-[color:var(--text-secondary)]">
-                    {r.day_of_month
-                      ? r.month_of_year
-                        ? `${r.day_of_month}/${r.month_of_year}`
-                        : `Dia ${r.day_of_month}`
-                      : "—"}
-                  </td>
-                  <td className="px-4 py-3">
                     <span
-                      className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                      className={`ml-2 rounded-full px-2 py-0.5 text-xs ${
                         r.kind === "PJ"
                           ? "bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300"
                           : "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300"
@@ -80,14 +91,25 @@ export default async function RecorrenciasPage() {
                       {r.kind}
                     </span>
                   </td>
+                  <td className="px-4 py-3 text-[color:var(--text-secondary)]">
+                    {movementLabel(r)}
+                  </td>
+                  <td className="px-4 py-3 text-[color:var(--text-secondary)]">
+                    {targetText(r)}
+                  </td>
+                  <td className="px-4 py-3 text-[color:var(--text-secondary)]">
+                    {formatInterval(r.interval_count, r.interval_unit)}
+                  </td>
                   <td
                     className={`px-4 py-3 text-right font-semibold ${
-                      r.direction === "in"
-                        ? "text-emerald-700 dark:text-emerald-300"
-                        : "text-red-700 dark:text-red-300"
+                      r.to_account_id
+                        ? "text-[color:var(--text-primary)]"
+                        : r.direction === "in"
+                          ? "text-emerald-700 dark:text-emerald-300"
+                          : "text-red-700 dark:text-red-300"
                     }`}
                   >
-                    {r.direction === "in" ? "+" : "−"}
+                    {r.to_account_id ? "" : r.direction === "in" ? "+" : "−"}
                     {formatBRL(r.amount)}
                   </td>
                   <td className="px-4 py-3 text-right">
@@ -98,7 +120,7 @@ export default async function RecorrenciasPage() {
                       >
                         Editar
                       </Link>
-                      <DeleteButton id={r.id} action={deleteRecurringAction} />
+                      <DeleteButton id={r.id} action={deleteMovementAction} />
                     </div>
                   </td>
                 </tr>

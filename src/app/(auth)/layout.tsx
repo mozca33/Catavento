@@ -6,11 +6,9 @@ import { Logo } from "@/components/logo";
 const NAV_ITEMS: { href: string; label: string }[] = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/contas", label: "Contas" },
-  { href: "/cartoes", label: "Cartões" },
-  { href: "/recorrencias", label: "Recorrências" },
+  { href: "/recorrencias", label: "Movimentos" },
   { href: "/parcelamentos", label: "Parcelamentos" },
   { href: "/planejados", label: "Planejados" },
-  { href: "/transferencias", label: "Transferências" },
   { href: "/simulador", label: "Simulador" },
   { href: "/assistente", label: "Assistente" },
 ];

@@ -67,6 +67,7 @@ export interface RecurringEntry {
   user_id: string;
   account_id: string | null;
   credit_card_id: string | null;
+  to_account_id: string | null;
   description: string;
   amount: number;
   direction: EntryDirection;
@@ -140,20 +141,3 @@ export interface Subscription {
   updated_at: string;
 }
 
-export interface TransferRule {
-  id: string;
-  user_id: string;
-  from_account_id: string;
-  to_account_id: string | null;
-  to_external_label: string | null;
-  description: string;
-  amount: number;
-  interval_count: number;
-  interval_unit: IntervalUnit;
-  day_of_month: number | null;
-  start_date: string;
-  end_date: string | null;
-  archived: boolean;
-  created_at: string;
-  updated_at: string;
-}

@@ -19,14 +19,12 @@ export async function loadUserSnapshot(): Promise<ProjectionSnapshot | null> {
     recurringRes,
     installmentsRes,
     plannedRes,
-    transfersRes,
   ] = await Promise.all([
     supabase.from("accounts").select("*").eq("archived", false),
     supabase.from("credit_cards").select("*").eq("archived", false),
     supabase.from("recurring_entries").select("*").eq("archived", false),
     supabase.from("installments").select("*").eq("archived", false),
     supabase.from("planned_entries").select("*").eq("done", false),
-    supabase.from("transfer_rules").select("*").eq("archived", false),
   ]);
 
   return {
@@ -35,6 +33,5 @@ export async function loadUserSnapshot(): Promise<ProjectionSnapshot | null> {
     recurringEntries: recurringRes.data ?? [],
     installments: installmentsRes.data ?? [],
     plannedEntries: plannedRes.data ?? [],
-    transferRules: transfersRes.data ?? [],
   };
 }

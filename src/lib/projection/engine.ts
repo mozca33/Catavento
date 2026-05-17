@@ -6,7 +6,6 @@ import type {
   Installment,
   PlannedEntry,
   RecurringEntry,
-  TransferRule,
 } from "@/types/database";
 import {
   addInterval,
@@ -32,7 +31,6 @@ export interface ProjectionSnapshot {
   recurringEntries: RecurringEntry[];
   installments: Installment[];
   plannedEntries: PlannedEntry[];
-  transferRules: TransferRule[];
 }
 
 export interface ProjectionEvent {
@@ -101,12 +99,34 @@ export function projectCashFlow(
     snapshot.creditCards.map((c) => [c.id, c.account_id]),
   );
 
-  // --- Recorrências em conta ---
+  // --- Recorrências (entrada, saída, transferência interna) ---
   for (const r of snapshot.recurringEntries) {
     if (r.archived) continue;
     const dates = expandRecurrence(r, from, horizon);
     for (const date of dates) {
       const signedAmount = r.direction === "in" ? r.amount : -r.amount;
+
+      // Transferência interna: saída na conta de origem + entrada no destino
+      if (r.to_account_id && r.account_id) {
+        events.push({
+          date,
+          accountId: r.account_id,
+          description: `→ Transferência: ${r.description}`,
+          amount: -r.amount,
+          source: "transfer_out",
+          kind: r.kind,
+        });
+        events.push({
+          date,
+          accountId: r.to_account_id,
+          description: `← Transferência: ${r.description}`,
+          amount: r.amount,
+          source: "transfer_in",
+          kind: getAccountKind(snapshot.accounts, r.to_account_id),
+        });
+        continue;
+      }
+
       if (r.account_id) {
         events.push({
           date,
@@ -117,7 +137,6 @@ export function projectCashFlow(
           kind: r.kind,
         });
       } else if (r.credit_card_id) {
-        // Saída no cartão: vai pra fatura futura.
         const card = snapshot.creditCards.find((c) => c.id === r.credit_card_id);
         if (card) {
           const debitDate = billDebitDate(card, date);
@@ -204,45 +223,6 @@ export function projectCashFlow(
     }
   }
 
-  // --- Regras de transferência ---
-  for (const t of snapshot.transferRules) {
-    if (t.archived) continue;
-    const dates = expandIntervalDates(
-      t.start_date,
-      t.end_date,
-      t.interval_count,
-      t.interval_unit,
-      t.day_of_month,
-      null,
-      from,
-      horizon,
-    );
-    const isExternal = t.to_account_id === null;
-    for (const date of dates) {
-      // saída da origem (sempre)
-      events.push({
-        date,
-        accountId: t.from_account_id,
-        description: isExternal
-          ? `Transferência → ${t.to_external_label}: ${t.description}`
-          : `Transferência: ${t.description}`,
-        amount: -t.amount,
-        source: "transfer_out",
-        kind: getAccountKind(snapshot.accounts, t.from_account_id),
-      });
-      // entrada na conta destino (só se interno)
-      if (!isExternal && t.to_account_id) {
-        events.push({
-          date,
-          accountId: t.to_account_id,
-          description: `Transferência: ${t.description}`,
-          amount: t.amount,
-          source: "transfer_in",
-          kind: getAccountKind(snapshot.accounts, t.to_account_id),
-        });
-      }
-    }
-  }
   void cardToAccount; // referência reservada pra otimizações futuras
 
   // 2. Ordenar eventos por data

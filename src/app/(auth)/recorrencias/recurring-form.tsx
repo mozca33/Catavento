@@ -1,10 +1,15 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import type { Account, CreditCard, IntervalUnit, RecurringEntry } from "@/types/database";
+import type {
+  Account,
+  CreditCard,
+  IntervalUnit,
+  RecurringEntry,
+} from "@/types/database";
 import {
-  createRecurringAction,
-  updateRecurringAction,
+  createMovementAction,
+  updateMovementAction,
   type ActionResult,
 } from "@/lib/actions/recurring";
 
@@ -16,12 +21,21 @@ interface Props {
   cards: CreditCard[];
 }
 
+type MovementType = "income" | "expense" | "transfer";
+
 const UNIT_LABELS: Record<IntervalUnit, string> = {
   days: "dia(s)",
   weeks: "semana(s)",
   months: "mês(es)",
   years: "ano(s)",
 };
+
+function inferType(v?: Partial<RecurringEntry>): MovementType {
+  if (!v) return "expense";
+  if (v.to_account_id) return "transfer";
+  if (v.direction === "in") return "income";
+  return "expense";
+}
 
 export function RecurringForm({
   mode,
@@ -32,33 +46,34 @@ export function RecurringForm({
 }: Props) {
   const action =
     mode === "edit" && recurringId
-      ? updateRecurringAction.bind(null, recurringId)
-      : createRecurringAction;
+      ? updateMovementAction.bind(null, recurringId)
+      : createMovementAction;
 
   const today = new Date().toISOString().slice(0, 10);
-  const [state, formAction, pending] = useActionState<ActionResult | null, FormData>(
-    action,
-    null,
-  );
+  const [state, formAction, pending] = useActionState<
+    ActionResult | null,
+    FormData
+  >(action, null);
 
-  const [direction, setDirection] = useState<"in" | "out">(
-    initialValues?.direction ?? "out",
+  const [movementType, setMovementType] = useState<MovementType>(inferType(initialValues));
+  const [useCard, setUseCard] = useState<boolean>(!!initialValues?.credit_card_id);
+  const [fromAccountId, setFromAccountId] = useState<string>(
+    initialValues?.account_id ?? accounts[0]?.id ?? "",
   );
-  const initialTarget = initialValues?.credit_card_id ? "card" : "account";
-  const [targetType, setTargetType] = useState<"account" | "card">(initialTarget);
-  const [targetId, setTargetId] = useState<string>(() => {
-    if (initialValues?.account_id) return initialValues.account_id;
-    if (initialValues?.credit_card_id) return initialValues.credit_card_id;
-    return accounts[0]?.id ?? "";
-  });
+  const [toAccountId, setToAccountId] = useState<string>(
+    initialValues?.to_account_id ?? accounts[1]?.id ?? accounts[0]?.id ?? "",
+  );
+  const [cardId, setCardId] = useState<string>(
+    initialValues?.credit_card_id ?? cards[0]?.id ?? "",
+  );
   const [intervalUnit, setIntervalUnit] = useState<IntervalUnit>(
     initialValues?.interval_unit ?? "months",
   );
 
-  function switchTargetType(t: "account" | "card") {
-    setTargetType(t);
-    const opts = t === "account" ? accounts : cards;
-    setTargetId(opts[0]?.id ?? "");
+  function switchType(t: MovementType) {
+    setMovementType(t);
+    if (t === "income") setUseCard(false);
+    if (t === "transfer") setUseCard(false);
   }
 
   const err = state && !state.ok ? state.fieldErrors : undefined;
@@ -70,36 +85,46 @@ export function RecurringForm({
       action={formAction}
       className="space-y-4 rounded-2xl border border-[color:var(--border-default)] bg-[color:var(--bg-card)] p-6"
     >
+      {/* Tipo de movimento */}
       <div>
         <label className="block text-sm font-medium text-[color:var(--text-secondary)]">
-          Tipo
+          Tipo de movimento
         </label>
-        <div className="mt-1 flex gap-1 rounded-lg bg-[color:var(--bg-muted)] p-1 text-xs">
-          {(["in", "out"] as const).map((d) => (
+        <div className="mt-1 grid grid-cols-3 gap-1 rounded-lg bg-[color:var(--bg-muted)] p-1 text-xs">
+          {(
+            [
+              ["income", "Entrada"],
+              ["expense", "Saída"],
+              ["transfer", "Transferência entre minhas contas"],
+            ] as const
+          ).map(([t, label]) => (
             <button
-              key={d}
+              key={t}
               type="button"
-              onClick={() => {
-                setDirection(d);
-                if (d === "in") setTargetType("account");
-              }}
-              className={`flex-1 rounded-md px-3 py-1.5 font-medium ${
-                direction === d
+              onClick={() => switchType(t)}
+              className={`rounded-md px-3 py-1.5 font-medium ${
+                movementType === t
                   ? "bg-[color:var(--brand-primary)] text-white shadow-sm"
                   : "text-[color:var(--text-secondary)] hover:text-[color:var(--text-primary)]"
               }`}
             >
-              {d === "in" ? "Entrada" : "Saída"}
+              {label}
             </button>
           ))}
         </div>
-        <input type="hidden" name="direction" value={direction} />
+        <input type="hidden" name="movement_type" value={movementType} />
       </div>
 
       <Input
         label="Descrição"
         name="description"
-        placeholder="Ex: Aluguel recebido"
+        placeholder={
+          movementType === "income"
+            ? "Ex: Aluguel recebido"
+            : movementType === "transfer"
+              ? "Ex: Retirada PJ mensal"
+              : "Ex: Condomínio"
+        }
         defaultValue={initialValues?.description}
         error={err?.description?.[0]}
       />
@@ -109,11 +134,66 @@ export function RecurringForm({
         name="amount"
         type="number"
         step="0.01"
-        placeholder="0,00"
         defaultValue={initialValues?.amount?.toString()}
         error={err?.amount?.[0]}
       />
 
+      {/* Conta de origem */}
+      <ControlledSelect
+        label={movementType === "income" ? "Conta de destino" : "Conta de origem"}
+        name="from_account_id"
+        value={fromAccountId}
+        onChange={setFromAccountId}
+        options={accounts.map((a) => [a.id, `${a.name} (${a.kind})`] as [string, string])}
+        error={err?.from_account_id?.[0]}
+      />
+
+      {/* Cartão (só pra saída) */}
+      {movementType === "expense" && cards.length > 0 && (
+        <div>
+          <label className="flex cursor-pointer items-center gap-2 text-sm text-[color:var(--text-secondary)]">
+            <input
+              type="checkbox"
+              checked={useCard}
+              onChange={(e) => setUseCard(e.target.checked)}
+              className="rounded border-[color:var(--border-default)]"
+            />
+            Pagar no cartão de crédito
+          </label>
+          <input type="hidden" name="use_card" value={useCard ? "true" : "false"} />
+          {useCard && (
+            <div className="mt-3">
+              <ControlledSelect
+                label="Cartão"
+                name="card_id"
+                value={cardId}
+                onChange={setCardId}
+                options={cards.map((c) => [c.id, `${c.name} (${c.kind})`] as [string, string])}
+                error={err?.card_id?.[0]}
+              />
+              <p className="mt-1 text-xs text-[color:var(--text-muted)]">
+                A parcela vai cair na fatura conforme as datas do cartão.
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Transferência → destino */}
+      {movementType === "transfer" && (
+        <ControlledSelect
+          label="Conta de destino"
+          name="to_account_id"
+          value={toAccountId}
+          onChange={setToAccountId}
+          options={accounts
+            .filter((a) => a.id !== fromAccountId)
+            .map((a) => [a.id, `${a.name} (${a.kind})`] as [string, string])}
+          error={err?.to_account_id?.[0]}
+        />
+      )}
+
+      {/* Recorrência */}
       <div>
         <label className="block text-sm font-medium text-[color:var(--text-secondary)]">
           Repetir a cada
@@ -141,9 +221,6 @@ export function RecurringForm({
             ))}
           </select>
         </div>
-        <p className="mt-1 text-xs text-[color:var(--text-muted)]">
-          Ex: a cada 2 semanas, a cada 3 meses, a cada 6 meses
-        </p>
       </div>
 
       {showDayOfMonth && (
@@ -170,51 +247,6 @@ export function RecurringForm({
           )}
         </div>
       )}
-
-      <div>
-        <label className="block text-sm font-medium text-[color:var(--text-secondary)]">
-          Destino
-        </label>
-        <div className="mt-1 flex gap-1 rounded-lg bg-[color:var(--bg-muted)] p-1 text-xs">
-          <button
-            type="button"
-            onClick={() => switchTargetType("account")}
-            className={`flex-1 rounded-md px-3 py-1.5 font-medium ${
-              targetType === "account"
-                ? "bg-[color:var(--bg-elevated)] text-[color:var(--text-primary)] shadow-sm"
-                : "text-[color:var(--text-secondary)]"
-            }`}
-          >
-            Conta
-          </button>
-          {cards.length > 0 && direction === "out" && (
-            <button
-              type="button"
-              onClick={() => switchTargetType("card")}
-              className={`flex-1 rounded-md px-3 py-1.5 font-medium ${
-                targetType === "card"
-                  ? "bg-[color:var(--brand-primary)] text-white shadow-sm"
-                  : "text-[color:var(--text-secondary)] hover:text-[color:var(--text-primary)]"
-              }`}
-            >
-              Cartão
-            </button>
-          )}
-        </div>
-        <input type="hidden" name="target_type" value={targetType} />
-      </div>
-
-      <ControlledSelect
-        label={targetType === "account" ? "Conta" : "Cartão"}
-        name="target_id"
-        value={targetId}
-        onChange={setTargetId}
-        options={
-          targetType === "account"
-            ? accounts.map((a) => [a.id, `${a.name} (${a.kind})`] as [string, string])
-            : cards.map((c) => [c.id, `${c.name} (${c.kind})`] as [string, string])
-        }
-      />
 
       <UncontrolledSelect
         label="Natureza"
@@ -323,12 +355,14 @@ function ControlledSelect({
   options,
   value,
   onChange,
+  error,
 }: {
   label: string;
   name: string;
   options: [string, string][];
   value: string;
   onChange: (v: string) => void;
+  error?: string;
 }) {
   return (
     <div>
@@ -347,6 +381,9 @@ function ControlledSelect({
           </option>
         ))}
       </select>
+      {error && (
+        <p className="mt-1 text-xs text-red-600 dark:text-red-400">{error}</p>
+      )}
     </div>
   );
 }

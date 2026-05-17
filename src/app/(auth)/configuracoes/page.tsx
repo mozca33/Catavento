@@ -77,6 +77,13 @@ export default async function ConfiguracoesPage() {
         </div>
       </Section>
 
+      <Section title="Avançado">
+        <p className="text-sm text-[color:var(--text-secondary)]">
+          Configurações de cartões de crédito (datas de fechamento, débito automático e limites).
+        </p>
+        <Action href="/cartoes" label="Gerenciar cartões →" />
+      </Section>
+
       <Section title="Aparência">
         <p className="text-sm text-[color:var(--text-secondary)]">
           O tema (claro/escuro) segue a configuração do seu sistema

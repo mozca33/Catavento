@@ -3,10 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import {
-  recurringEntrySchema,
-  transferRuleSchema,
-} from "@/lib/validation/recurring";
+import { movementSchema } from "@/lib/validation/recurring";
 
 export type ActionResult =
   | { ok: true }
@@ -20,40 +17,68 @@ async function authedClient() {
   return { supabase, user };
 }
 
-// ============================================================================
-// Recurring Entries
-// ============================================================================
-
-function parseRecurring(formData: FormData) {
+function parseMovement(formData: FormData) {
   const get = (k: string) => {
     const v = formData.get(k);
     return v === null || v === "" ? undefined : v;
   };
-  return recurringEntrySchema.safeParse({
+  return movementSchema.safeParse({
     description: get("description"),
     amount: get("amount"),
-    direction: get("direction"),
+    movement_type: get("movement_type"),
+    from_account_id: get("from_account_id"),
+    use_card: get("use_card"),
+    card_id: get("card_id"),
+    to_account_id: get("to_account_id"),
     interval_count: get("interval_count"),
     interval_unit: get("interval_unit"),
     day_of_month: get("day_of_month"),
     month_of_year: get("month_of_year"),
-    target_type: get("target_type"),
-    target_id: get("target_id"),
     kind: get("kind"),
     start_date: get("start_date"),
     end_date: get("end_date"),
   });
 }
 
+function buildPayload(d: ReturnType<typeof movementSchema.parse>) {
+  const direction = d.movement_type === "income" ? "in" : "out";
+
+  // Caso 1: saída em cartão
+  if (d.movement_type === "expense" && d.use_card && d.card_id) {
+    return {
+      account_id: null,
+      credit_card_id: d.card_id,
+      to_account_id: null,
+      direction,
+    };
+  }
+  // Caso 2: transferência entre minhas contas
+  if (d.movement_type === "transfer") {
+    return {
+      account_id: d.from_account_id,
+      credit_card_id: null,
+      to_account_id: d.to_account_id ?? null,
+      direction: "out" as const,
+    };
+  }
+  // Caso 3: entrada ou saída direta em conta
+  return {
+    account_id: d.from_account_id,
+    credit_card_id: null,
+    to_account_id: null,
+    direction,
+  };
+}
+
 function legacyFrequency(unit: string): "monthly" | "yearly" {
   return unit === "years" ? "yearly" : "monthly";
 }
 
-export async function createRecurringAction(
+export async function createMovementAction(
   _prev: ActionResult | null,
   formData: FormData,
 ): Promise<ActionResult> {
-  const parsed = parseRecurring(formData);
+  const parsed = parseMovement(formData);
   if (!parsed.success) {
     return {
       ok: false,
@@ -66,13 +91,13 @@ export async function createRecurringAction(
   if (!user) return { ok: false, error: "Não autenticado" };
 
   const d = parsed.data;
+  const targets = buildPayload(d);
+
   const { error } = await supabase.from("recurring_entries").insert({
     user_id: user.id,
-    account_id: d.target_type === "account" ? d.target_id : null,
-    credit_card_id: d.target_type === "card" ? d.target_id : null,
+    ...targets,
     description: d.description,
     amount: d.amount,
-    direction: d.direction,
     frequency: legacyFrequency(d.interval_unit),
     interval_count: d.interval_count,
     interval_unit: d.interval_unit,
@@ -84,7 +109,7 @@ export async function createRecurringAction(
   });
 
   if (error) {
-    console.error("[recurring:create]", error);
+    console.error("[movement:create]", error);
     return { ok: false, error: `Erro ao salvar: ${error.message}` };
   }
 
@@ -93,12 +118,12 @@ export async function createRecurringAction(
   redirect("/recorrencias");
 }
 
-export async function updateRecurringAction(
+export async function updateMovementAction(
   id: string,
   _prev: ActionResult | null,
   formData: FormData,
 ): Promise<ActionResult> {
-  const parsed = parseRecurring(formData);
+  const parsed = parseMovement(formData);
   if (!parsed.success) {
     return {
       ok: false,
@@ -111,14 +136,14 @@ export async function updateRecurringAction(
   if (!user) return { ok: false, error: "Não autenticado" };
 
   const d = parsed.data;
+  const targets = buildPayload(d);
+
   const { error } = await supabase
     .from("recurring_entries")
     .update({
-      account_id: d.target_type === "account" ? d.target_id : null,
-      credit_card_id: d.target_type === "card" ? d.target_id : null,
+      ...targets,
       description: d.description,
       amount: d.amount,
-      direction: d.direction,
       frequency: legacyFrequency(d.interval_unit),
       interval_count: d.interval_count,
       interval_unit: d.interval_unit,
@@ -132,7 +157,7 @@ export async function updateRecurringAction(
     .eq("user_id", user.id);
 
   if (error) {
-    console.error("[recurring:update]", error);
+    console.error("[movement:update]", error);
     return { ok: false, error: `Erro ao atualizar: ${error.message}` };
   }
 
@@ -141,7 +166,7 @@ export async function updateRecurringAction(
   redirect("/recorrencias");
 }
 
-export async function deleteRecurringAction(formData: FormData): Promise<void> {
+export async function deleteMovementAction(formData: FormData): Promise<void> {
   const id = formData.get("id") as string;
   if (!id) return;
   const { supabase, user } = await authedClient();
@@ -155,128 +180,7 @@ export async function deleteRecurringAction(formData: FormData): Promise<void> {
   revalidatePath("/dashboard");
 }
 
-// ============================================================================
-// Transfer Rules
-// ============================================================================
-
-function parseTransfer(formData: FormData) {
-  const get = (k: string) => {
-    const v = formData.get(k);
-    return v === null || v === "" ? undefined : v;
-  };
-  return transferRuleSchema.safeParse({
-    from_account_id: get("from_account_id"),
-    destination_type: get("destination_type"),
-    to_account_id: get("to_account_id"),
-    to_external_label: get("to_external_label"),
-    description: get("description"),
-    amount: get("amount"),
-    interval_count: get("interval_count"),
-    interval_unit: get("interval_unit"),
-    day_of_month: get("day_of_month"),
-    start_date: get("start_date"),
-    end_date: get("end_date"),
-  });
-}
-
-export async function createTransferRuleAction(
-  _prev: ActionResult | null,
-  formData: FormData,
-): Promise<ActionResult> {
-  const parsed = parseTransfer(formData);
-  if (!parsed.success) {
-    return {
-      ok: false,
-      error: "Dados inválidos",
-      fieldErrors: parsed.error.flatten().fieldErrors,
-    };
-  }
-  const { supabase, user } = await authedClient();
-  if (!user) return { ok: false, error: "Não autenticado" };
-
-  const d = parsed.data;
-  const { error } = await supabase.from("transfer_rules").insert({
-    user_id: user.id,
-    from_account_id: d.from_account_id,
-    to_account_id:
-      d.destination_type === "internal" ? d.to_account_id || null : null,
-    to_external_label:
-      d.destination_type === "external" ? d.to_external_label || null : null,
-    description: d.description,
-    amount: d.amount,
-    interval_count: d.interval_count,
-    interval_unit: d.interval_unit,
-    day_of_month: d.day_of_month ?? null,
-    start_date: d.start_date,
-    end_date: d.end_date || null,
-  });
-
-  if (error) {
-    console.error("[transfer:create]", error);
-    return { ok: false, error: `Erro ao salvar: ${error.message}` };
-  }
-
-  revalidatePath("/transferencias");
-  revalidatePath("/dashboard");
-  redirect("/transferencias");
-}
-
-export async function updateTransferRuleAction(
-  id: string,
-  _prev: ActionResult | null,
-  formData: FormData,
-): Promise<ActionResult> {
-  const parsed = parseTransfer(formData);
-  if (!parsed.success) {
-    return {
-      ok: false,
-      error: "Dados inválidos",
-      fieldErrors: parsed.error.flatten().fieldErrors,
-    };
-  }
-  const { supabase, user } = await authedClient();
-  if (!user) return { ok: false, error: "Não autenticado" };
-
-  const d = parsed.data;
-  const { error } = await supabase
-    .from("transfer_rules")
-    .update({
-      from_account_id: d.from_account_id,
-      to_account_id:
-        d.destination_type === "internal" ? d.to_account_id || null : null,
-      to_external_label:
-        d.destination_type === "external" ? d.to_external_label || null : null,
-      description: d.description,
-      amount: d.amount,
-      interval_count: d.interval_count,
-      interval_unit: d.interval_unit,
-      day_of_month: d.day_of_month ?? null,
-      start_date: d.start_date,
-      end_date: d.end_date || null,
-    })
-    .eq("id", id)
-    .eq("user_id", user.id);
-
-  if (error) {
-    console.error("[transfer:update]", error);
-    return { ok: false, error: `Erro ao atualizar: ${error.message}` };
-  }
-
-  revalidatePath("/transferencias");
-  revalidatePath("/dashboard");
-  redirect("/transferencias");
-}
-
-export async function deleteTransferRuleAction(formData: FormData): Promise<void> {
-  const id = formData.get("id") as string;
-  if (!id) return;
-  const { supabase, user } = await authedClient();
-  if (!user) return;
-  await supabase
-    .from("transfer_rules")
-    .update({ archived: true })
-    .eq("id", id)
-    .eq("user_id", user.id);
-  revalidatePath("/transferencias");
-  revalidatePath("/dashboard");
-}
+// Aliases retrocompatíveis enquanto a renomeação chega
+export const createRecurringAction = createMovementAction;
+export const updateRecurringAction = updateMovementAction;
+export const deleteRecurringAction = deleteMovementAction;
