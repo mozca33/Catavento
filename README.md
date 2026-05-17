@@ -2,7 +2,7 @@
 
 > Controle financeiro que olha pra frente — pra autônomos e profissionais liberais que misturam PJ e PF.
 
-**Status:** 🚧 Em desenvolvimento (concluídas Fases 0-8, próxima: Fase 9 — Landing + lançamento)
+**Status:** ✅ MVP completo (Fases 0-9 concluídas) — pronto pra deploy em produção
 **Última atualização:** 2026-05-17
 
 ---
@@ -182,7 +182,7 @@ Detalhamento completo em [`CLAUDE.md`](./CLAUDE.md).
 | **6. Multi-conta PJ+PF** | Tags, transferências recorrentes, toggle PF/PJ/All | ✅ Concluído |
 | **7. IA conversacional** | Chat com Claude + tools + filtro de escopo de 3 camadas | ✅ Concluído |
 | **8. Cobrança** | Trial 7d + plano único (Mercado Pago) | ✅ Concluído |
-| **9. Landing + lançamento** | Página de venda, copy, produção | 🚧 Próxima fase |
+| **9. Landing + lançamento** | Landing page, termos, privacidade, guia de deploy | ✅ Concluído |
 
 ---
 
@@ -245,3 +245,5 @@ Abra [http://localhost:3000](http://localhost:3000).
 - ✅ Fase 8 — Cobrança via Mercado Pago: tabela `subscriptions` com trial automático de 7 dias (criado via trigger no signup), página `/assinatura` com status + ações de assinar/cancelar, integração `PreApproval` do MP (assinatura recorrente mensal R$ 29), webhook `/api/webhooks/mercadopago` com validação HMAC-SHA256, middleware bloqueia rotas protegidas quando trial expira sem assinatura
 - 🐛 Bugfix: gráfico de projeção agora sempre renderiza linha (engine adiciona ponto no horizonte mesmo sem eventos)
 - 🆕 CRUDs completos: cartões de crédito, parcelamentos, eventos planejados — todas com edit/delete
+- ✅ Fase 9 — Landing + lançamento: landing page de marketing (Hero, Problema/Solução, Features, Personas, Pricing, FAQ, CTA final, Footer); páginas legais `/termos` e `/privacidade` com texto LGPD-compliant; meta tags SEO (Open Graph, keywords, descrição em PT-BR); guia completo de deploy em `DEPLOY.md`
+- 🚀 MVP completo — pronto pra produção

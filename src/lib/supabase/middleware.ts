@@ -50,7 +50,10 @@ export async function updateSession(request: NextRequest) {
     pathname.startsWith("/auth");
 
   const isPublicRoute =
-    pathname === "/" || pathname.startsWith("/api/public");
+    pathname === "/" ||
+    pathname === "/termos" ||
+    pathname === "/privacidade" ||
+    pathname.startsWith("/api/public");
 
   // Sem usuário → redireciona pro login (exceto rotas públicas e auth)
   if (!user && !isAuthRoute && !isPublicRoute) {
