@@ -25,12 +25,19 @@ export async function startSubscriptionAction(): Promise<SubscriptionActionResul
   const plan = SUBSCRIPTION_PLANS.monthly;
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
+  // Mercado Pago exige HTTPS no back_url e rejeita localhost.
+  // Em dev local, usamos uma URL pública do próprio MP como fallback —
+  // depois do pagamento o usuário volta manualmente pro app.
+  const backUrl = appUrl.startsWith("https://")
+    ? `${appUrl}/assinatura?status=success`
+    : "https://www.mercadopago.com.br/subscriptions";
+
   try {
     const preapproval = await mpPreApproval.create({
       body: {
         reason: plan.name,
         payer_email: user.email,
-        back_url: `${appUrl}/assinatura?status=success`,
+        back_url: backUrl,
         auto_recurring: {
           frequency: plan.frequency,
           frequency_type: plan.frequency_type,
