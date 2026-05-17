@@ -79,7 +79,10 @@ export async function createRecurringAction(
     kind: d.kind,
   });
 
-  if (error) return { ok: false, error: "Erro ao salvar" };
+  if (error) {
+    console.error("[recurring:create]", error);
+    return { ok: false, error: `Erro ao salvar: ${error.message}` };
+  }
 
   revalidatePath("/recorrencias");
   revalidatePath("/dashboard");
@@ -124,7 +127,10 @@ export async function updateRecurringAction(
     .eq("id", id)
     .eq("user_id", user.id);
 
-  if (error) return { ok: false, error: "Erro ao atualizar" };
+  if (error) {
+    console.error("[recurring:update]", error);
+    return { ok: false, error: `Erro ao atualizar: ${error.message}` };
+  }
 
   revalidatePath("/recorrencias");
   revalidatePath("/dashboard");
@@ -197,7 +203,10 @@ export async function createTransferRuleAction(
     end_date: d.end_date || null,
   });
 
-  if (error) return { ok: false, error: "Erro ao salvar" };
+  if (error) {
+    console.error("[transfer:create]", error);
+    return { ok: false, error: `Erro ao salvar: ${error.message}` };
+  }
 
   revalidatePath("/transferencias");
   revalidatePath("/dashboard");
@@ -240,7 +249,10 @@ export async function updateTransferRuleAction(
     .eq("id", id)
     .eq("user_id", user.id);
 
-  if (error) return { ok: false, error: "Erro ao atualizar" };
+  if (error) {
+    console.error("[transfer:update]", error);
+    return { ok: false, error: `Erro ao atualizar: ${error.message}` };
+  }
 
   revalidatePath("/transferencias");
   revalidatePath("/dashboard");
