@@ -112,6 +112,31 @@ export interface PlannedEntry {
   updated_at: string;
 }
 
+export type SubscriptionStatus =
+  | "trialing"
+  | "active"
+  | "past_due"
+  | "canceled"
+  | "expired";
+
+export type SubscriptionPlan = "monthly";
+
+export interface Subscription {
+  id: string;
+  user_id: string;
+  status: SubscriptionStatus;
+  plan: SubscriptionPlan;
+  amount: number;
+  currency: string;
+  mp_preapproval_id: string | null;
+  mp_payer_email: string | null;
+  trial_ends_at: string;
+  current_period_end: string | null;
+  canceled_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface TransferRule {
   id: string;
   user_id: string;

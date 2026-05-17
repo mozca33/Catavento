@@ -13,6 +13,7 @@ const NAV_ITEMS: { href: string; label: string }[] = [
   { href: "/transferencias", label: "Transferências" },
   { href: "/simulador", label: "Simulador" },
   { href: "/assistente", label: "Assistente IA" },
+  { href: "/assinatura", label: "Assinatura" },
 ];
 
 export default async function AuthenticatedLayout({

@@ -15,6 +15,20 @@ Antes do lançamento público, definir canal (e-mail dedicado tipo `security@cat
 - **Mitigação:** aguardar release do Next.js com postcss atualizado. `npm audit fix --force` faria downgrade do Next pra v9 — inaceitável.
 - **Revisão:** mensal.
 
+### Fase 8 — Cobrança (Mercado Pago)
+- [x] Access token do MP apenas server-side (`server-only`)
+- [x] Webhook valida assinatura HMAC-SHA256 com `timingSafeEqual` (anti-timing attack)
+- [x] Service role key isolada em `createAdminClient()` — usada só em webhook e actions específicas
+- [x] Tabela `subscriptions` com RLS — usuário só lê a própria
+- [x] Mutações só via service role (impossível pelo client)
+- [x] Trial criado automaticamente via trigger (não confia em input do client)
+- [x] Middleware bloqueia rotas protegidas se sem assinatura ativa
+- [x] Rotas sempre permitidas: `/assinatura`, `/profile`, `/auth`, `/api/webhooks`
+- [x] Open redirect bloqueado em `back_url` do checkout (usa NEXT_PUBLIC_APP_URL controlado)
+- [x] Confirmação no client antes de cancelar
+- [ ] Rate limiting no webhook (futuro)
+- [ ] Logs de auditoria de mudanças de status (futuro)
+
 ## ✅ Checklist por fase
 
 Conforme cada fase do roadmap é concluída, marcar aqui os itens implementados.

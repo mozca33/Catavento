@@ -1,6 +1,18 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+/**
+ * Rotas que SEMPRE são acessíveis (mesmo sem assinatura ativa).
+ * O usuário precisa poder pagar quando o trial expira.
+ */
+const ALWAYS_ALLOWED_PATHS = [
+  "/assinatura",
+  "/profile",
+  "/auth",
+  "/api/chat",     // o filtro de escopo já controla acesso interno
+  "/api/webhooks", // webhooks externos (MP, etc.)
+];
+
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
 
@@ -26,25 +38,60 @@ export async function updateSession(request: NextRequest) {
   );
 
   // IMPORTANTE: não inserir código entre createServerClient e getUser
-  // pra evitar bugs sutis de sessão.
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
+  const pathname = request.nextUrl.pathname;
+
   const isAuthRoute =
-    request.nextUrl.pathname.startsWith("/login") ||
-    request.nextUrl.pathname.startsWith("/signup") ||
-    request.nextUrl.pathname.startsWith("/auth");
+    pathname.startsWith("/login") ||
+    pathname.startsWith("/signup") ||
+    pathname.startsWith("/auth");
 
   const isPublicRoute =
-    request.nextUrl.pathname === "/" ||
-    request.nextUrl.pathname.startsWith("/api/public");
+    pathname === "/" || pathname.startsWith("/api/public");
 
+  // Sem usuário → redireciona pro login (exceto rotas públicas e auth)
   if (!user && !isAuthRoute && !isPublicRoute) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);
   }
 
+  // Com usuário: checa assinatura para rotas protegidas
+  if (user && !isAuthRoute && !isPublicRoute) {
+    const isAlwaysAllowed = ALWAYS_ALLOWED_PATHS.some((p) =>
+      pathname.startsWith(p),
+    );
+
+    if (!isAlwaysAllowed) {
+      const { data: sub } = await supabase
+        .from("subscriptions")
+        .select("status, trial_ends_at")
+        .eq("user_id", user.id)
+        .single();
+
+      const hasAccess = subscriptionHasAccess(sub);
+      if (!hasAccess) {
+        const url = request.nextUrl.clone();
+        url.pathname = "/assinatura";
+        url.searchParams.set("required", "1");
+        return NextResponse.redirect(url);
+      }
+    }
+  }
+
   return supabaseResponse;
+}
+
+function subscriptionHasAccess(
+  sub: { status: string; trial_ends_at: string } | null,
+): boolean {
+  if (!sub) return false;
+  if (sub.status === "active") return true;
+  if (sub.status === "trialing") {
+    return new Date(sub.trial_ends_at) > new Date();
+  }
+  return false;
 }
