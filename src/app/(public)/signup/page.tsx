@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useActionState } from "react";
 import { signupAction, type SignupActionResult } from "./actions";
+import { GoogleSignInButton } from "@/components/google-signin-button";
+import { Logo } from "@/components/logo";
 
 export default function SignupPage() {
   const [state, formAction, pending] = useActionState<
@@ -29,11 +31,8 @@ export default function SignupPage() {
   return (
     <main className="flex min-h-screen items-center justify-center px-4 py-12">
       <div className="w-full max-w-md">
-        <Link
-          href="/"
-          className="mb-8 flex items-center gap-2 text-2xl font-bold text-slate-900 dark:text-slate-50"
-        >
-          🌬️ Catavento
+        <Link href="/" aria-label="Catavento" className="mb-8 inline-block">
+          <Logo size={28} />
         </Link>
 
         <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-800 dark:bg-slate-900">
@@ -44,7 +43,17 @@ export default function SignupPage() {
             7 dias grátis. Sem cartão de crédito.
           </p>
 
-          <form action={formAction} className="mt-6 space-y-4">
+          <div className="mt-6">
+            <GoogleSignInButton />
+          </div>
+
+          <div className="my-6 flex items-center gap-3">
+            <div className="h-px flex-1 bg-slate-200 dark:bg-slate-800" />
+            <span className="text-xs text-slate-500 dark:text-slate-400">ou</span>
+            <div className="h-px flex-1 bg-slate-200 dark:bg-slate-800" />
+          </div>
+
+          <form action={formAction} className="space-y-4">
             <Field
               label="Nome completo"
               id="fullName"
@@ -80,7 +89,7 @@ export default function SignupPage() {
             <button
               type="submit"
               disabled={pending}
-              className="w-full rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-slate-50 dark:text-slate-900 dark:hover:bg-slate-200"
+              className="w-full rounded-lg bg-[color:var(--brand-primary)] px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-[color:var(--brand-primary-hover)] disabled:cursor-not-allowed disabled:opacity-50"
             >
               {pending ? "Criando..." : "Criar conta"}
             </button>

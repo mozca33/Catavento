@@ -42,35 +42,57 @@ Registro de decisões tomadas durante o desenvolvimento e questões a revisar co
 
 ---
 
-## ❓ Dúvidas pra revisar com o usuário na Fase 6
+## ✅ Decisões definidas pelo usuário (2026-05-17)
 
-### Q-001 — Login com Google/social?
-Hoje só implementei e-mail/senha. Google OAuth é trivial de adicionar via Supabase. Vale agora ou só depois?
+### Q-001 — Login com Google → **SIM, implementar**
+Botão "Continuar com Google" adicionado a `/login` e `/signup`. Requer config externa (ver instruções no chat).
 
-### Q-002 — Modelo de cobrança final
-Stripe ou Mercado Pago? Decidir na Fase 8, mas vale alinhar antes da landing.
+### Q-003 — Identidade visual → **Paleta "Brisa" + wordmark com símbolo**
+- Primária: #2563EB (azul confiável)
+- Acento: #F97066 (coral)
+- Sucesso: #10B981 (verde-esmeralda)
+- Alerta: #F59E0B (âmbar)
+- Fundo: #FEFCF6 (creme suave)
+- Texto: #0F172A
+- Logo: catavento de 4 pás coloridas + wordmark "Catavento"
+- Variáveis CSS em `src/app/globals.css`; componente `Logo`/`LogoMark` em `src/components/logo.tsx`
 
-### Q-003 — Visual / identidade do produto
-Hoje uso tema neutro (slate). Quer paleta específica? Logotipo próprio?
+### Q-004 — Onboarding → **Opcional**
+Após signup, usuário vai direto pro dashboard. Se não tem contas, vê empty state com CTA "Adicionar primeira conta" (não bloqueia, só sugere).
 
-### Q-004 — Onboarding obrigatório?
-Primeira vez logado, força configurar contas ou deixa explorar dashboard vazio?
+### Q-006 — Notificações → **Configuráveis pelo usuário**
+Construir UI de preferências onde o usuário escolhe: e-mail / push (futuro) / só in-app. Tabela `notification_preferences` será adicionada quando implementarmos alertas preditivos (Fase 7+).
 
-### Q-005 — Limite de plano
-Quantas contas/cartões/recorrências o trial e o plano pago permitem? Sem limite? Com limite anti-abuso?
+## ❓ Dúvidas restantes — re-explicadas e pendentes
 
-### Q-006 — Notificações
-Alertas preditivos: e-mail? push? Apenas in-app? Frequência?
+### Q-002 — Cobrança: Stripe ou Mercado Pago?
+Quando lançarmos com plano pago, precisamos de um processador de pagamentos. **O que isso significa na prática:**
+- **Stripe**: cobrança internacional, suporta cartão + PIX, taxa ~4-5% por transação. Vantagem: dashboard ótimo, fácil de programar, aceita cartões internacionais.
+- **Mercado Pago**: brasileiro, taxa ~3% (pode ser menor), PIX recorrente nativo. Vantagem: melhor pra quem usa só BRL e clientes Brasil.
+- **Pode decidir na Fase 8**, mas vale pensar agora.
 
-### Q-007 — Backup/exportação
-LGPD exige exportar dados. JSON cru ou PDF/CSV formatado também?
+### Q-005 — Limites do plano
+Pra evitar abuso (ex: alguém criar 10.000 contas e quebrar performance), pode haver limites técnicos. **Sugestão**:
+- Trial 7 dias: tudo liberado
+- Plano pago: sem limite na prática (limites técnicos só anti-abuso, ex: 100 contas, 500 recorrências)
+- **Decisão pendente**: definir esses limites antes do lançamento.
 
-### Q-008 — Multi-perfil por usuário
-Suporte a múltiplos "perfis financeiros" por conta (ex: meu + da empresa + da minha mãe), ou um usuário = um conjunto de dados?
-**Tendência:** um usuário = um conjunto. Multi-perfil pós-MVP.
+### Q-007 — Exportação de dados (LGPD)
+Lei brasileira obriga deixar usuário baixar todos os dados dele. **Formato**:
+- JSON cru (técnico): obrigatório
+- CSV / PDF formatado: opcional, mas torna o produto melhor
+- **Decisão pendente**: implementar antes do lançamento. Por ora, JSON basta.
 
-### Q-009 — Compartilhamento (casal)
-Bloqueado pós-MVP, mas vale registrar: dois usuários verem o mesmo conjunto de contas.
+### Q-008 — Múltiplos "livros" por usuário?
+Hoje, 1 usuário = 1 conjunto de contas. Cenário futuro: você quer gerenciar sua vida financeira + a da sua mãe + a da empresa do seu amigo na mesma conta? Isso são "perfis financeiros" separados sob o mesmo login.
+- **Tendência**: deixar pós-MVP. 1 usuário = 1 livro no início.
 
-### Q-010 — Open Finance
-Vale priorizar pós-Fase 9? Custo Belvo/Pluggy começa ~R$ 3-8 por usuário/mês.
+### Q-009 — Compartilhamento (ex: casal)
+Você e sua esposa Julia logarem com contas diferentes mas verem/editarem o mesmo conjunto de dados financeiros do casamento/casa.
+- **Tendência**: deixar pós-MVP. Mas vale considerar pra v2 dado que vocês são casal.
+
+### Q-010 — Open Finance (sincronização automática com banco)
+Belvo e Pluggy são serviços que conectam ao seu banco e puxam saldo + transações automaticamente, via Open Finance (regulado pelo BC).
+- Vantagem: usuário não precisa atualizar saldo manualmente
+- Custo: ~R$ 3-8 por usuário/mês (impacta margem)
+- **Tendência**: implementar pós-Fase 9, quando tivermos base paga. Diferencial forte mas custoso.

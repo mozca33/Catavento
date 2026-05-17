@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { Logo } from "@/components/logo";
 
 const NAV_ITEMS: { href: string; label: string }[] = [
   { href: "/dashboard", label: "Dashboard" },
@@ -29,11 +30,8 @@ export default async function AuthenticatedLayout({
       <header className="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
           <div className="flex items-center gap-8">
-            <Link
-              href="/dashboard"
-              className="flex items-center gap-2 font-semibold text-slate-900 dark:text-slate-50"
-            >
-              🌬️ Catavento
+            <Link href="/dashboard" aria-label="Catavento">
+              <Logo size={26} />
             </Link>
             <nav className="hidden gap-1 md:flex">
               {NAV_ITEMS.map((item) => (

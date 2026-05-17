@@ -1,11 +1,47 @@
 @import "tailwindcss";
 
+/* ----------------------------------------------------------------------------
+ * Identidade visual Catavento — Paleta "Brisa"
+ * ---------------------------------------------------------------------------- */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Paleta */
+  --brand-primary: #2563EB;       /* azul confiável */
+  --brand-primary-hover: #1D4ED8;
+  --brand-accent: #F97066;        /* coral energético */
+  --brand-success: #10B981;       /* verde-esmeralda */
+  --brand-warning: #F59E0B;       /* âmbar */
+  --brand-danger: #DC2626;        /* vermelho sério */
+
+  /* Tonais */
+  --bg-page: #FEFCF6;             /* creme suave */
+  --bg-card: #FFFFFF;
+  --bg-muted: #F5F2EA;
+  --text-primary: #0F172A;        /* azul-marinho profundo */
+  --text-secondary: #475569;
+  --text-muted: #94A3B8;
+  --border-default: #E5E1D5;
+  --border-strong: #CBD0C0;
+
+  /* Sistema */
+  --background: var(--bg-page);
+  --foreground: var(--text-primary);
 }
 
 @theme inline {
+  --color-brand: var(--brand-primary);
+  --color-brand-hover: var(--brand-primary-hover);
+  --color-accent: var(--brand-accent);
+  --color-success: var(--brand-success);
+  --color-warning: var(--brand-warning);
+  --color-danger: var(--brand-danger);
+  --color-page: var(--bg-page);
+  --color-card: var(--bg-card);
+  --color-muted: var(--bg-muted);
+  --color-ink: var(--text-primary);
+  --color-ink-2: var(--text-secondary);
+  --color-ink-3: var(--text-muted);
+  --color-line: var(--border-default);
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
@@ -14,13 +50,22 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --bg-page: #0B1220;
+    --bg-card: #111827;
+    --bg-muted: #1E293B;
+    --text-primary: #F1F5F9;
+    --text-secondary: #CBD5E1;
+    --text-muted: #64748B;
+    --border-default: #1E293B;
+    --border-strong: #334155;
+    --brand-primary: #3B82F6;
+    --brand-primary-hover: #60A5FA;
   }
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg-page);
+  color: var(--text-primary);
+  font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }

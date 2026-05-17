@@ -137,6 +137,22 @@ Compartilhar contas e visão consolidada entre cônjuges/sócios.
 
 ---
 
+## 🎨 Identidade visual — Paleta "Brisa"
+
+| Token | Hex | Uso |
+|---|---|---|
+| `--brand-primary` | #2563EB | Azul confiável, CTAs primários |
+| `--brand-accent` | #F97066 | Coral, destaques |
+| `--brand-success` | #10B981 | Verde-esmeralda, saldo positivo |
+| `--brand-warning` | #F59E0B | Âmbar, alertas suaves |
+| `--brand-danger` | #DC2626 | Vermelho, alertas críticos |
+| `--bg-page` | #FEFCF6 | Creme suave, fundo geral |
+| `--text-primary` | #0F172A | Azul-marinho profundo, texto |
+
+**Logo:** wordmark "Catavento" + símbolo de catavento com 4 pás (azul, coral, verde, âmbar) representando as 4 cores da paleta. Componente em `src/components/logo.tsx`.
+
+---
+
 ## 🔒 Segurança (princípios)
 
 Detalhamento completo em [`CLAUDE.md`](./CLAUDE.md).
@@ -218,3 +234,9 @@ Abra [http://localhost:3000](http://localhost:3000).
 - ✅ Fase 4: dashboard com gráfico (recharts), cards de saldo PF/PJ/total, lista de próximos eventos, empty state com CTA
 - ✅ Fase 5: simulador "E se?" — formulário interativo client-side que recomputa projeção em tempo real e mostra comparativo de saldo em 3/6/12 meses + onde cai a 1ª parcela
 - ✅ Fase 6: CRUDs de contas, recorrências e transferências recorrentes; toggle PF/PJ/Consolidado no gráfico; navegação completa
+
+### 2026-05-17
+- 🎨 Identidade visual aplicada: paleta "Brisa" (azul + coral + creme), variáveis CSS em `globals.css`
+- 🌬️ Logo Catavento criado (wordmark + símbolo SVG de 4 pás)
+- 🔐 Google OAuth integrado em /login e /signup (botão "Continuar com Google")
+- 📋 Decisões registradas em DECISIONS.md: Google sim, onboarding opcional, paleta Brisa, notificações configuráveis pelo usuário

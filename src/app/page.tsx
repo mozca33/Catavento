@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { LogoMark } from "@/components/logo";
 
 export default async function HomePage() {
   const supabase = await createClient();
@@ -15,27 +16,29 @@ export default async function HomePage() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center px-4 py-12 text-center">
       <div className="max-w-2xl">
-        <div className="text-6xl">🌬️</div>
-        <h1 className="mt-6 text-5xl font-bold tracking-tight text-slate-900 dark:text-slate-50">
+        <div className="flex justify-center">
+          <LogoMark size={80} />
+        </div>
+        <h1 className="mt-6 text-5xl font-bold tracking-tight text-[color:var(--text-primary)]">
           Catavento
         </h1>
-        <p className="mt-4 text-xl text-slate-600 dark:text-slate-400">
+        <p className="mt-4 text-xl text-[color:var(--text-secondary)]">
           Controle financeiro que olha pra frente.
         </p>
-        <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+        <p className="mt-2 text-sm text-[color:var(--text-muted)]">
           Pra autônomos e profissionais liberais que misturam PJ e PF.
         </p>
 
         <div className="mt-10 flex items-center justify-center gap-4">
           <Link
             href="/signup"
-            className="rounded-lg bg-slate-900 px-6 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-slate-800 dark:bg-slate-50 dark:text-slate-900 dark:hover:bg-slate-200"
+            className="rounded-lg bg-[color:var(--brand-primary)] px-6 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-[color:var(--brand-primary-hover)]"
           >
             Criar conta grátis
           </Link>
           <Link
             href="/login"
-            className="rounded-lg border border-slate-300 px-6 py-3 text-sm font-medium text-slate-900 transition hover:bg-slate-100 dark:border-slate-700 dark:text-slate-50 dark:hover:bg-slate-800"
+            className="rounded-lg border border-[color:var(--border-strong)] px-6 py-3 text-sm font-medium text-[color:var(--text-primary)] transition hover:bg-[color:var(--bg-muted)]"
           >
             Entrar
           </Link>
