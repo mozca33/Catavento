@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import type { RecurringEntry } from "@/types/database";
+import { DeleteButton } from "@/components/delete-button";
+import { deleteRecurringAction } from "@/lib/actions/recurring";
 
 export default async function RecorrenciasPage() {
   const supabase = await createClient();
@@ -16,50 +18,51 @@ export default async function RecorrenciasPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-50">
+          <h1 className="text-3xl font-bold text-[color:var(--text-primary)]">
             Recorrências
           </h1>
-          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+          <p className="mt-1 text-sm text-[color:var(--text-secondary)]">
             Entradas e saídas que se repetem todo mês ou ano
           </p>
         </div>
         <Link
           href="/recorrencias/nova"
-          className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-slate-800 dark:bg-slate-50 dark:text-slate-900 dark:hover:bg-slate-200"
+          className="rounded-lg bg-[color:var(--brand-primary)] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[color:var(--brand-primary-hover)]"
         >
           + Nova recorrência
         </Link>
       </div>
 
       {entries.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-12 text-center dark:border-slate-700 dark:bg-slate-900">
-          <p className="text-slate-600 dark:text-slate-400">
+        <div className="rounded-2xl border border-dashed border-[color:var(--border-default)] bg-[color:var(--bg-card)] p-12 text-center">
+          <p className="text-[color:var(--text-secondary)]">
             Nenhuma recorrência cadastrada.
           </p>
         </div>
       ) : (
-        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+        <div className="overflow-hidden rounded-2xl border border-[color:var(--border-default)] bg-[color:var(--bg-card)]">
           <table className="w-full text-sm">
-            <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+            <thead className="bg-[color:var(--bg-muted)] text-xs uppercase tracking-wide text-[color:var(--text-muted)]">
               <tr>
                 <th className="px-4 py-3 text-left">Descrição</th>
                 <th className="px-4 py-3 text-left">Tipo</th>
                 <th className="px-4 py-3 text-left">Dia</th>
                 <th className="px-4 py-3 text-left">Natureza</th>
                 <th className="px-4 py-3 text-right">Valor</th>
+                <th className="px-4 py-3 text-right">Ações</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
+            <tbody className="divide-y divide-[color:var(--border-default)]">
               {entries.map((r) => (
                 <tr key={r.id}>
-                  <td className="px-4 py-3 font-medium text-slate-900 dark:text-slate-50">
+                  <td className="px-4 py-3 font-medium text-[color:var(--text-primary)]">
                     {r.description}
                   </td>
-                  <td className="px-4 py-3 text-slate-600 dark:text-slate-400">
+                  <td className="px-4 py-3 text-[color:var(--text-secondary)]">
                     {r.direction === "in" ? "Entrada" : "Saída"} ·{" "}
                     {r.frequency === "monthly" ? "Mensal" : "Anual"}
                   </td>
-                  <td className="px-4 py-3 text-slate-600 dark:text-slate-400">
+                  <td className="px-4 py-3 text-[color:var(--text-secondary)]">
                     {r.frequency === "monthly"
                       ? `Dia ${r.day_of_month}`
                       : `${r.day_of_month}/${r.month_of_year}`}
@@ -84,6 +87,17 @@ export default async function RecorrenciasPage() {
                   >
                     {r.direction === "in" ? "+" : "−"}
                     {formatBRL(r.amount)}
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    <div className="flex justify-end gap-3 text-xs">
+                      <Link
+                        href={`/recorrencias/${r.id}`}
+                        className="text-[color:var(--brand-primary)] hover:underline"
+                      >
+                        Editar
+                      </Link>
+                      <DeleteButton id={r.id} action={deleteRecurringAction} />
+                    </div>
                   </td>
                 </tr>
               ))}

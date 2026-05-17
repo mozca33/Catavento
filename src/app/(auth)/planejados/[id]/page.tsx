@@ -1,35 +1,48 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { RecurringForm } from "../recurring-form";
-import type { Account, CreditCard } from "@/types/database";
+import { PlannedForm } from "../planned-form";
+import type { Account, CreditCard, PlannedEntry } from "@/types/database";
 
-export default async function NovaRecorrenciaPage() {
+export default async function EditarPlanejadoPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
   const supabase = await createClient();
-  const [accountsRes, cardsRes] = await Promise.all([
+
+  const [planRes, accountsRes, cardsRes] = await Promise.all([
+    supabase.from("planned_entries").select("*").eq("id", id).single(),
     supabase.from("accounts").select("*").eq("archived", false),
     supabase.from("credit_cards").select("*").eq("archived", false),
   ]);
 
+  if (!planRes.data) notFound();
+  const planned = planRes.data as PlannedEntry;
   const accounts = (accountsRes.data as Account[] | null) ?? [];
   const cards = (cardsRes.data as CreditCard[] | null) ?? [];
-
-  if (accounts.length === 0) redirect("/contas/nova");
 
   return (
     <div className="mx-auto max-w-xl space-y-6">
       <div>
         <Link
-          href="/recorrencias"
+          href="/planejados"
           className="text-sm text-[color:var(--text-secondary)] hover:underline"
         >
           ← Voltar
         </Link>
         <h1 className="mt-2 text-3xl font-bold text-[color:var(--text-primary)]">
-          Nova recorrência
+          Editar evento
         </h1>
       </div>
-      <RecurringForm mode="create" accounts={accounts} cards={cards} />
+      <PlannedForm
+        mode="edit"
+        plannedId={planned.id}
+        initialValues={planned}
+        accounts={accounts}
+        cards={cards}
+      />
     </div>
   );
 }

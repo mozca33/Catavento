@@ -1,35 +1,40 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { RecurringForm } from "../recurring-form";
+import { CardForm } from "../card-form";
 import type { Account, CreditCard } from "@/types/database";
 
-export default async function NovaRecorrenciaPage() {
+export default async function EditarCartaoPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
   const supabase = await createClient();
-  const [accountsRes, cardsRes] = await Promise.all([
+
+  const [cardRes, accountsRes] = await Promise.all([
+    supabase.from("credit_cards").select("*").eq("id", id).single(),
     supabase.from("accounts").select("*").eq("archived", false),
-    supabase.from("credit_cards").select("*").eq("archived", false),
   ]);
 
+  if (!cardRes.data) notFound();
+  const card = cardRes.data as CreditCard;
   const accounts = (accountsRes.data as Account[] | null) ?? [];
-  const cards = (cardsRes.data as CreditCard[] | null) ?? [];
-
-  if (accounts.length === 0) redirect("/contas/nova");
 
   return (
     <div className="mx-auto max-w-xl space-y-6">
       <div>
         <Link
-          href="/recorrencias"
+          href="/cartoes"
           className="text-sm text-[color:var(--text-secondary)] hover:underline"
         >
           ← Voltar
         </Link>
         <h1 className="mt-2 text-3xl font-bold text-[color:var(--text-primary)]">
-          Nova recorrência
+          Editar cartão
         </h1>
       </div>
-      <RecurringForm mode="create" accounts={accounts} cards={cards} />
+      <CardForm mode="edit" cardId={card.id} initialValues={card} accounts={accounts} />
     </div>
   );
 }

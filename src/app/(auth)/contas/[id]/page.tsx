@@ -1,33 +1,39 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { TransferForm } from "../transfer-form";
+import { AccountForm } from "../account-form";
 import type { Account } from "@/types/database";
 
-export default async function NovaTransferenciaPage() {
+export default async function EditarContaPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
   const supabase = await createClient();
   const { data } = await supabase
     .from("accounts")
     .select("*")
-    .eq("archived", false);
-  const accounts = (data as Account[] | null) ?? [];
+    .eq("id", id)
+    .single();
 
-  if (accounts.length < 2) redirect("/contas/nova");
+  if (!data) notFound();
+  const account = data as Account;
 
   return (
     <div className="mx-auto max-w-xl space-y-6">
       <div>
         <Link
-          href="/transferencias"
+          href="/contas"
           className="text-sm text-[color:var(--text-secondary)] hover:underline"
         >
           ← Voltar
         </Link>
         <h1 className="mt-2 text-3xl font-bold text-[color:var(--text-primary)]">
-          Nova transferência recorrente
+          Editar conta
         </h1>
       </div>
-      <TransferForm mode="create" accounts={accounts} />
+      <AccountForm mode="edit" accountId={account.id} initialValues={account} />
     </div>
   );
 }

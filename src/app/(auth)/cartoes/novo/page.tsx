@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { TransferForm } from "../transfer-form";
+import { CardForm } from "../card-form";
 import type { Account } from "@/types/database";
 
-export default async function NovaTransferenciaPage() {
+export default async function NovoCartaoPage() {
   const supabase = await createClient();
   const { data } = await supabase
     .from("accounts")
@@ -12,22 +12,22 @@ export default async function NovaTransferenciaPage() {
     .eq("archived", false);
   const accounts = (data as Account[] | null) ?? [];
 
-  if (accounts.length < 2) redirect("/contas/nova");
+  if (accounts.length === 0) redirect("/contas/nova");
 
   return (
     <div className="mx-auto max-w-xl space-y-6">
       <div>
         <Link
-          href="/transferencias"
+          href="/cartoes"
           className="text-sm text-[color:var(--text-secondary)] hover:underline"
         >
           ← Voltar
         </Link>
         <h1 className="mt-2 text-3xl font-bold text-[color:var(--text-primary)]">
-          Nova transferência recorrente
+          Novo cartão
         </h1>
       </div>
-      <TransferForm mode="create" accounts={accounts} />
+      <CardForm mode="create" accounts={accounts} />
     </div>
   );
 }

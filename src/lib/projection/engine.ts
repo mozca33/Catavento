@@ -248,6 +248,7 @@ export function projectCashFlow(
         account.current_balance,
         account.balance_as_of,
         accountEvents,
+        horizon,
       );
       return {
         accountId: account.id,
@@ -366,6 +367,7 @@ function buildTimeline(
   startBalance: number,
   startDate: DateString,
   events: ProjectionEvent[],
+  horizon: DateString,
 ): AccountTimelinePoint[] {
   const timeline: AccountTimelinePoint[] = [
     { date: startDate, balance: startBalance, events: [] },
@@ -386,6 +388,14 @@ function buildTimeline(
       balance += e.amount;
     }
     timeline.push({ date, balance: round2(balance), events: dayEvents });
+  }
+
+  // Garante que sempre há um ponto no horizonte, mesmo sem eventos.
+  // Isso permite que o gráfico desenhe uma linha mesmo quando não há
+  // recorrências/parcelamentos cadastrados.
+  const lastDate = timeline[timeline.length - 1].date;
+  if (lastDate < horizon) {
+    timeline.push({ date: horizon, balance: round2(balance), events: [] });
   }
 
   return timeline;

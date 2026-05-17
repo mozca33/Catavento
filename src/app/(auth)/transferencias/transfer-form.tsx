@@ -1,43 +1,63 @@
 "use client";
 
 import { useActionState } from "react";
-import type { Account } from "@/types/database";
+import type { Account, TransferRule } from "@/types/database";
 import {
   createTransferRuleAction,
+  updateTransferRuleAction,
   type ActionResult,
 } from "@/lib/actions/recurring";
 
-export function TransferForm({ accounts }: { accounts: Account[] }) {
+interface Props {
+  mode: "create" | "edit";
+  transferId?: string;
+  initialValues?: Partial<TransferRule>;
+  accounts: Account[];
+}
+
+export function TransferForm({
+  mode,
+  transferId,
+  initialValues,
+  accounts,
+}: Props) {
+  const action =
+    mode === "edit" && transferId
+      ? updateTransferRuleAction.bind(null, transferId)
+      : createTransferRuleAction;
+
   const today = new Date().toISOString().slice(0, 10);
-  const [state, formAction, pending] = useActionState<
-    ActionResult | null,
-    FormData
-  >(createTransferRuleAction, null);
+  const [state, formAction, pending] = useActionState<ActionResult | null, FormData>(
+    action,
+    null,
+  );
 
   const err = state && !state.ok ? state.fieldErrors : undefined;
 
   return (
     <form
       action={formAction}
-      className="space-y-4 rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900"
+      className="space-y-4 rounded-2xl border border-[color:var(--border-default)] bg-[color:var(--bg-card)] p-6"
     >
       <Select
         label="De (conta origem)"
         name="from_account_id"
+        defaultValue={initialValues?.from_account_id ?? accounts[0]?.id}
         options={accounts.map((a) => [a.id, `${a.name} (${a.kind})`] as [string, string])}
         error={err?.from_account_id?.[0]}
       />
       <Select
         label="Para (conta destino)"
         name="to_account_id"
+        defaultValue={initialValues?.to_account_id ?? accounts[1]?.id}
         options={accounts.map((a) => [a.id, `${a.name} (${a.kind})`] as [string, string])}
-        defaultIndex={1}
         error={err?.to_account_id?.[0]}
       />
       <Input
         label="Descrição"
         name="description"
         placeholder="Ex: Retirada PJ mensal"
+        defaultValue={initialValues?.description}
         error={err?.description?.[0]}
       />
       <div className="grid grid-cols-2 gap-3">
@@ -46,6 +66,7 @@ export function TransferForm({ accounts }: { accounts: Account[] }) {
           name="amount"
           type="number"
           step="0.01"
+          defaultValue={initialValues?.amount?.toString()}
           error={err?.amount?.[0]}
         />
         <Input
@@ -54,13 +75,24 @@ export function TransferForm({ accounts }: { accounts: Account[] }) {
           type="number"
           min="1"
           max="31"
-          defaultValue="1"
+          defaultValue={initialValues?.day_of_month?.toString() ?? "1"}
           error={err?.day_of_month?.[0]}
         />
       </div>
       <div className="grid grid-cols-2 gap-3">
-        <Input label="Início" name="start_date" type="date" defaultValue={today} />
-        <Input label="Fim (opcional)" name="end_date" type="date" required={false} />
+        <Input
+          label="Início"
+          name="start_date"
+          type="date"
+          defaultValue={initialValues?.start_date ?? today}
+        />
+        <Input
+          label="Fim (opcional)"
+          name="end_date"
+          type="date"
+          defaultValue={initialValues?.end_date ?? undefined}
+          required={false}
+        />
       </div>
 
       {state && !state.ok && !state.fieldErrors && (
@@ -75,9 +107,9 @@ export function TransferForm({ accounts }: { accounts: Account[] }) {
       <button
         type="submit"
         disabled={pending}
-        className="w-full rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-slate-800 disabled:opacity-50 dark:bg-slate-50 dark:text-slate-900 dark:hover:bg-slate-200"
+        className="w-full rounded-lg bg-[color:var(--brand-primary)] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[color:var(--brand-primary-hover)] disabled:opacity-50"
       >
-        {pending ? "Salvando..." : "Criar"}
+        {pending ? "Salvando..." : mode === "edit" ? "Salvar" : "Criar"}
       </button>
     </form>
   );
@@ -108,7 +140,7 @@ function Input({
 }) {
   return (
     <div>
-      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+      <label className="block text-sm font-medium text-[color:var(--text-secondary)]">
         {label}
       </label>
       <input
@@ -120,7 +152,7 @@ function Input({
         placeholder={placeholder}
         defaultValue={defaultValue}
         required={required}
-        className="mt-1 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-50"
+        className="mt-1 block w-full rounded-lg border border-[color:var(--border-default)] bg-white px-3 py-2 text-sm text-[color:var(--text-primary)] focus:border-[color:var(--brand-primary)] focus:outline-none focus:ring-1 focus:ring-[color:var(--brand-primary)] dark:bg-slate-950"
       />
       {error && (
         <p className="mt-1 text-xs text-red-600 dark:text-red-400">{error}</p>
@@ -133,24 +165,24 @@ function Select({
   label,
   name,
   options,
-  defaultIndex = 0,
+  defaultValue,
   error,
 }: {
   label: string;
   name: string;
   options: [string, string][];
-  defaultIndex?: number;
+  defaultValue?: string;
   error?: string;
 }) {
   return (
     <div>
-      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+      <label className="block text-sm font-medium text-[color:var(--text-secondary)]">
         {label}
       </label>
       <select
         name={name}
-        defaultValue={options[defaultIndex]?.[0]}
-        className="mt-1 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-50"
+        defaultValue={defaultValue || options[0]?.[0]}
+        className="mt-1 block w-full rounded-lg border border-[color:var(--border-default)] bg-white px-3 py-2 text-sm text-[color:var(--text-primary)] focus:border-[color:var(--brand-primary)] focus:outline-none focus:ring-1 focus:ring-[color:var(--brand-primary)] dark:bg-slate-950"
       >
         {options.map(([v, l]) => (
           <option key={v} value={v}>

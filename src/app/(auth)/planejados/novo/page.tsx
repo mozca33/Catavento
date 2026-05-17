@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { RecurringForm } from "../recurring-form";
+import { PlannedForm } from "../planned-form";
 import type { Account, CreditCard } from "@/types/database";
 
-export default async function NovaRecorrenciaPage() {
+export default async function NovoPlanejadoPage() {
   const supabase = await createClient();
   const [accountsRes, cardsRes] = await Promise.all([
     supabase.from("accounts").select("*").eq("archived", false),
@@ -20,16 +20,16 @@ export default async function NovaRecorrenciaPage() {
     <div className="mx-auto max-w-xl space-y-6">
       <div>
         <Link
-          href="/recorrencias"
+          href="/planejados"
           className="text-sm text-[color:var(--text-secondary)] hover:underline"
         >
           ← Voltar
         </Link>
         <h1 className="mt-2 text-3xl font-bold text-[color:var(--text-primary)]">
-          Nova recorrência
+          Novo evento planejado
         </h1>
       </div>
-      <RecurringForm mode="create" accounts={accounts} cards={cards} />
+      <PlannedForm mode="create" accounts={accounts} cards={cards} />
     </div>
   );
 }
