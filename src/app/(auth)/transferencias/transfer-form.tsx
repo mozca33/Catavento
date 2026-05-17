@@ -185,12 +185,21 @@ export function TransferForm({
         />
       </div>
 
-      {state && !state.ok && !state.fieldErrors && (
+      {state && !state.ok && (
         <div
           role="alert"
-          className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950 dark:text-red-300"
+          className="rounded-lg border border-red-300 bg-red-50 p-3 text-sm text-red-700 dark:border-red-700 dark:bg-red-950 dark:text-red-300"
         >
-          {state.error}
+          <p className="font-semibold">⚠ {state.error}</p>
+          {state.fieldErrors && (
+            <ul className="mt-2 list-disc pl-5 text-xs">
+              {Object.entries(state.fieldErrors).map(([field, msgs]) => (
+                <li key={field}>
+                  <strong>{field}</strong>: {(msgs as string[]).join(", ")}
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       )}
 
