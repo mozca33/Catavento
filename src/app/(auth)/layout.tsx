@@ -45,18 +45,19 @@ export default async function AuthenticatedLayout({
   return (
     <div className="min-h-screen bg-[color:var(--bg-page)]">
       <header className="border-b border-[color:var(--border-default)] bg-[color:var(--bg-card)]">
-        <div className="mx-auto flex max-w-6xl items-center gap-4 px-4 py-3">
+        <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-3">
           <Link href="/dashboard" aria-label="Catavento" className="shrink-0">
             <Logo size={24} />
           </Link>
 
-          <nav className="min-w-0 flex-1 overflow-x-auto">
-            <div className="flex gap-1 whitespace-nowrap">
+          <nav className="scrollbar-hide min-w-0 flex-1 overflow-x-auto">
+            <div className="flex gap-0.5 whitespace-nowrap">
               {NAV_ITEMS.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="rounded-lg px-3 py-1.5 text-sm font-medium text-[color:var(--text-secondary)] transition hover:bg-[color:var(--bg-muted)] hover:text-[color:var(--text-primary)]"
+                  prefetch
+                  className="rounded-lg px-2.5 py-1.5 text-sm font-medium text-[color:var(--text-secondary)] transition hover:bg-[color:var(--bg-muted)] hover:text-[color:var(--text-primary)]"
                 >
                   {item.label}
                 </Link>
@@ -64,9 +65,10 @@ export default async function AuthenticatedLayout({
             </div>
           </nav>
 
-          <div className="flex shrink-0 items-center gap-2">
+          <div className="flex shrink-0 items-center gap-1">
             <Link
               href="/configuracoes"
+              prefetch
               className="rounded-lg px-3 py-1.5 text-sm font-medium text-[color:var(--text-primary)] hover:bg-[color:var(--bg-muted)]"
             >
               {displayName}

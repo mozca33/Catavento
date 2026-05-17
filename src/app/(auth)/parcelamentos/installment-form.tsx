@@ -76,8 +76,8 @@ export function InstallmentForm({
             onClick={() => switchTargetType("account")}
             className={`flex-1 rounded-md px-3 py-1.5 font-medium ${
               targetType === "account"
-                ? "bg-[color:var(--bg-elevated)] text-[color:var(--text-primary)] shadow-sm"
-                : "text-[color:var(--text-secondary)]"
+                ? "bg-[color:var(--brand-primary)] text-white shadow-sm"
+                : "text-[color:var(--text-secondary)] hover:text-[color:var(--text-primary)]"
             }`}
           >
             Conta (boleto/débito)

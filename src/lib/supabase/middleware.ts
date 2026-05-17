@@ -71,6 +71,12 @@ export async function updateSession(request: NextRequest) {
     const isApiRoute = pathname.startsWith("/api/");
 
     if (!isAlwaysAllowed && !isApiRoute) {
+      // Otimização: cookie de 60s evita query Supabase em cada navegação
+      const cachedFlag = request.cookies.get("cv_sub_ok")?.value;
+      if (cachedFlag === "1") {
+        return supabaseResponse;
+      }
+
       const { data: sub } = await supabase
         .from("subscriptions")
         .select("status, trial_ends_at")
@@ -84,6 +90,14 @@ export async function updateSession(request: NextRequest) {
         url.searchParams.set("required", "1");
         return NextResponse.redirect(url);
       }
+
+      // Cacheia "ok" por 60 segundos — suficiente pra navegação entre abas
+      supabaseResponse.cookies.set("cv_sub_ok", "1", {
+        httpOnly: true,
+        sameSite: "lax",
+        maxAge: 60,
+        path: "/",
+      });
     }
   }
 

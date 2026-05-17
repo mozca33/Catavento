@@ -81,8 +81,8 @@ export function TransferForm({
               onClick={() => setDestinationType(t)}
               className={`flex-1 rounded-md px-3 py-1.5 font-medium ${
                 destinationType === t
-                  ? "bg-[color:var(--bg-elevated)] text-[color:var(--text-primary)] shadow-sm"
-                  : "text-[color:var(--text-secondary)]"
+                  ? "bg-[color:var(--brand-primary)] text-white shadow-sm"
+                  : "text-[color:var(--text-secondary)] hover:text-[color:var(--text-primary)]"
               }`}
             >
               {t === "internal" ? "Outra conta minha" : "Externo (terceiro)"}
